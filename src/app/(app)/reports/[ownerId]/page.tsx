@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatDate, formatMoney, monthLabel } from "@/lib/format";
+import { requireUser, accessibleApartmentIds } from "@/lib/auth";
 import PrintButton from "../PrintButton";
 
 function shiftMonth(month: number, year: number, delta: number) {
@@ -16,6 +17,8 @@ export default async function OwnerReportPage({
   params: Promise<{ ownerId: string }>;
   searchParams: Promise<{ month?: string; year?: string }>;
 }) {
+  const user = await requireUser();
+  const ids = accessibleApartmentIds(user);
   const { ownerId } = await params;
   const sp = await searchParams;
   const now = new Date();
@@ -26,6 +29,7 @@ export default async function OwnerReportPage({
     where: { id: ownerId },
     include: {
       apartments: {
+        where: ids ? { id: { in: ids } } : undefined,
         include: {
           tenants: { where: { active: true } },
           payments: { where: { periodMonth, periodYear } },
@@ -33,7 +37,11 @@ export default async function OwnerReportPage({
         orderBy: { label: "asc" },
       },
       expenses: {
-        where: { periodMonth, periodYear },
+        where: {
+          periodMonth,
+          periodYear,
+          ...(ids ? { OR: [{ apartmentId: { in: ids } }, { apartmentId: null }] } : {}),
+        },
         include: { apartment: true },
         orderBy: { incurredOn: "asc" },
       },
@@ -41,6 +49,7 @@ export default async function OwnerReportPage({
   });
 
   if (!owner) notFound();
+  if (ids && owner.apartments.length === 0) notFound();
 
   const totalCollected = owner.apartments.reduce(
     (sum, apt) => sum + apt.payments.reduce((s, p) => s + p.amount, 0),
@@ -85,6 +94,11 @@ export default async function OwnerReportPage({
             <p className="text-sm text-slate-500">
               {monthLabel(periodMonth, periodYear)}
             </p>
+            {ids && (
+              <p className="mt-1 text-xs text-slate-400 no-print">
+                Mostrando solo los apartamentos asignados a tu usuario.
+              </p>
+            )}
           </div>
           <div className="sm:text-right">
             <p className="font-medium">{owner.name}</p>

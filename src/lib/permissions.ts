@@ -1,0 +1,20 @@
+// Plain data, safe to import from client components — no server-only code.
+export const PERMISSIONS = [
+  "manageUsers",
+  "manageOwners",
+  "manageApartments",
+  "managePayments",
+  "manageExpenses",
+  "viewReports",
+] as const;
+
+export type Permission = (typeof PERMISSIONS)[number];
+
+export const PERMISSION_LABELS: Record<Permission, string> = {
+  manageUsers: "Administrar usuarios y roles",
+  manageOwners: "Crear y eliminar dueños",
+  manageApartments: "Crear/eliminar apartamentos, asignar inquilinos",
+  managePayments: "Registrar y eliminar cobros",
+  manageExpenses: "Registrar y eliminar gastos",
+  viewReports: "Ver reportes mensuales",
+};

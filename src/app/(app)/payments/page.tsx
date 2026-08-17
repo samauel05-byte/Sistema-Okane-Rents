@@ -1,10 +1,15 @@
 import { prisma } from "@/lib/prisma";
 import { formatDate, formatMoney, monthLabel } from "@/lib/format";
 import { deletePayment } from "@/app/actions";
+import { requireUser, accessibleApartmentIds } from "@/lib/auth";
 import PaymentForm from "./PaymentForm";
 
 export default async function PaymentsPage() {
+  const user = await requireUser();
+  const ids = accessibleApartmentIds(user);
+
   const apartments = await prisma.apartment.findMany({
+    where: ids ? { id: { in: ids } } : undefined,
     include: {
       owner: true,
       tenants: { where: { active: true } },
@@ -13,6 +18,7 @@ export default async function PaymentsPage() {
   });
 
   const payments = await prisma.payment.findMany({
+    where: ids ? { apartmentId: { in: ids } } : undefined,
     include: { tenant: true, apartment: { include: { owner: true } } },
     orderBy: { paidOn: "desc" },
     take: 30,
@@ -22,19 +28,21 @@ export default async function PaymentsPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Cobros a inquilinos</h1>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="mb-3 font-semibold">Registrar cobro</h2>
-        <PaymentForm
-          apartments={apartments.map((apt) => ({
-            id: apt.id,
-            label: apt.label,
-            ownerName: apt.owner.name,
-            rentAmount: apt.rentAmount,
-            tenantId: apt.tenants[0]?.id ?? null,
-            tenantName: apt.tenants[0]?.name ?? null,
-          }))}
-        />
-      </div>
+      {user.role.managePayments && (
+        <div className="rounded-lg border border-slate-200 bg-white p-4">
+          <h2 className="mb-3 font-semibold">Registrar cobro</h2>
+          <PaymentForm
+            apartments={apartments.map((apt) => ({
+              id: apt.id,
+              label: apt.label,
+              ownerName: apt.owner.name,
+              rentAmount: apt.rentAmount,
+              tenantId: apt.tenants[0]?.id ?? null,
+              tenantName: apt.tenants[0]?.name ?? null,
+            }))}
+          />
+        </div>
+      )}
 
       <div className="rounded-lg border border-slate-200 bg-white">
         <h2 className="border-b border-slate-100 p-4 font-semibold">
@@ -70,15 +78,17 @@ export default async function PaymentsPage() {
                       {formatMoney(p.amount)}
                     </td>
                     <td className="p-3 text-right">
-                      <form action={deletePayment}>
-                        <input type="hidden" name="id" value={p.id} />
-                        <button
-                          type="submit"
-                          className="text-xs text-rose-500 hover:underline"
-                        >
-                          Eliminar
-                        </button>
-                      </form>
+                      {user.role.managePayments && (
+                        <form action={deletePayment}>
+                          <input type="hidden" name="id" value={p.id} />
+                          <button
+                            type="submit"
+                            className="text-xs text-rose-500 hover:underline"
+                          >
+                            Eliminar
+                          </button>
+                        </form>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model Owner {
@@ -32,6 +32,7 @@ model Apartment {
   tenants     Tenant[]
   payments    Payment[]
   expenses    Expense[]
+  userAccess  UserApartmentAccess[]
 }
 
 model Tenant {
@@ -78,4 +79,58 @@ model Expense {
   apartment   Apartment? @relation(fields: [apartmentId], references: [id], onDelete: SetNull)
   apartmentId String?
   createdAt   DateTime   @default(now())
+}
+
+// A role is a named, admin-editable set of permissions. Built-in roles
+// (Administrador, Gestor) are just rows here too — admins can edit them
+// or create new ones ("perfiles") from the UI without any code change.
+model Role {
+  id                 String   @id @default(cuid())
+  name               String   @unique
+  description        String?
+  // Whether users with this role see/operate on every apartment, or only
+  // the ones explicitly granted via UserApartmentAccess.
+  scopeAllApartments Boolean  @default(false)
+  manageUsers        Boolean  @default(false)
+  manageOwners       Boolean  @default(false)
+  manageApartments   Boolean  @default(false)
+  managePayments     Boolean  @default(false)
+  manageExpenses     Boolean  @default(false)
+  viewReports        Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  users              User[]
+}
+
+model User {
+  id             String               @id @default(cuid())
+  username       String               @unique
+  passwordHash   String
+  name           String
+  active         Boolean              @default(true)
+  role           Role                 @relation(fields: [roleId], references: [id])
+  roleId         String
+  apartmentAccess UserApartmentAccess[]
+  sessions       Session[]
+  createdAt      DateTime             @default(now())
+}
+
+// Grants a user (with a restricted-scope role) access to one apartment.
+// Irrelevant for roles with scopeAllApartments = true.
+model UserApartmentAccess {
+  id          String    @id @default(cuid())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  apartmentId String
+  createdAt   DateTime  @default(now())
+
+  @@unique([userId, apartmentId])
+}
+
+model Session {
+  token     String   @id
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }

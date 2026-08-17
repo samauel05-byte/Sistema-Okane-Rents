@@ -1,10 +1,18 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { createOwner } from "@/app/actions";
+import { requireUser, accessibleApartmentIds } from "@/lib/auth";
 
 export default async function OwnersPage() {
+  const user = await requireUser();
+  const ids = accessibleApartmentIds(user);
+  const canCreateOwner = user.role.manageOwners && user.role.scopeAllApartments;
+
   const owners = await prisma.owner.findMany({
-    include: { apartments: true },
+    where: ids ? { apartments: { some: { id: { in: ids } } } } : undefined,
+    include: {
+      apartments: ids ? { where: { id: { in: ids } } } : true,
+    },
     orderBy: { name: "asc" },
   });
 
@@ -44,34 +52,36 @@ export default async function OwnersPage() {
         )}
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="mb-3 font-semibold">Agregar dueño</h2>
-        <form action={createOwner} className="grid gap-3 sm:grid-cols-3">
-          <input
-            name="name"
-            placeholder="Nombre"
-            required
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
-          />
-          <input
-            name="email"
-            type="email"
-            placeholder="Correo (opcional)"
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
-          />
-          <input
-            name="phone"
-            placeholder="Teléfono (opcional)"
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
-          />
-          <button
-            type="submit"
-            className="sm:col-span-3 rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700"
-          >
-            Guardar dueño
-          </button>
-        </form>
-      </div>
+      {canCreateOwner && (
+        <div className="rounded-lg border border-slate-200 bg-white p-4">
+          <h2 className="mb-3 font-semibold">Agregar dueño</h2>
+          <form action={createOwner} className="grid gap-3 sm:grid-cols-3">
+            <input
+              name="name"
+              placeholder="Nombre"
+              required
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+            />
+            <input
+              name="email"
+              type="email"
+              placeholder="Correo (opcional)"
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+            />
+            <input
+              name="phone"
+              placeholder="Teléfono (opcional)"
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+            />
+            <button
+              type="submit"
+              className="sm:col-span-3 rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700"
+            >
+              Guardar dueño
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,6 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import {
+  requireUser,
+  requirePermission,
+  requireApartmentAccess,
+  type CurrentUser,
+} from "@/lib/auth";
 
 function str(formData: FormData, key: string) {
   const v = formData.get(key);
@@ -15,7 +21,21 @@ function num(formData: FormData, key: string) {
   return Number.isFinite(n) ? n : 0;
 }
 
+/** Creating brand-new owners/apartments is out of the "assigned apartments"
+ * model, so it's reserved for roles with unrestricted (global) scope. */
+function requireGlobalScope(user: CurrentUser) {
+  if (!user.role.scopeAllApartments) {
+    throw new Error(
+      "Tu acceso está limitado a apartamentos específicos; no puedes crear dueños ni apartamentos nuevos."
+    );
+  }
+}
+
 export async function createOwner(formData: FormData) {
+  const user = await requireUser();
+  requirePermission(user, "manageOwners");
+  requireGlobalScope(user);
+
   const name = str(formData, "name");
   if (!name) return;
   const owner = await prisma.owner.create({
@@ -30,6 +50,10 @@ export async function createOwner(formData: FormData) {
 }
 
 export async function deleteOwner(formData: FormData) {
+  const user = await requireUser();
+  requirePermission(user, "manageOwners");
+  requireGlobalScope(user);
+
   const id = str(formData, "id");
   await prisma.owner.delete({ where: { id } });
   revalidatePath("/owners");
@@ -37,6 +61,10 @@ export async function deleteOwner(formData: FormData) {
 }
 
 export async function createApartment(formData: FormData) {
+  const user = await requireUser();
+  requirePermission(user, "manageApartments");
+  requireGlobalScope(user);
+
   const ownerId = str(formData, "ownerId");
   const label = str(formData, "label");
   const rentAmount = num(formData, "rentAmount");
@@ -53,17 +81,26 @@ export async function createApartment(formData: FormData) {
 }
 
 export async function deleteApartment(formData: FormData) {
+  const user = await requireUser();
+  requirePermission(user, "manageApartments");
+
   const id = str(formData, "id");
   const ownerId = str(formData, "ownerId");
+  requireApartmentAccess(user, id);
+
   await prisma.apartment.delete({ where: { id } });
   revalidatePath(`/owners/${ownerId}`);
 }
 
 export async function createTenant(formData: FormData) {
+  const user = await requireUser();
+  requirePermission(user, "manageApartments");
+
   const apartmentId = str(formData, "apartmentId");
   const ownerId = str(formData, "ownerId");
   const name = str(formData, "name");
   if (!apartmentId || !name) return;
+  requireApartmentAccess(user, apartmentId);
 
   // Only one active tenant per apartment at a time.
   await prisma.tenant.updateMany({
@@ -84,6 +121,9 @@ export async function createTenant(formData: FormData) {
 }
 
 export async function createPayment(formData: FormData) {
+  const user = await requireUser();
+  requirePermission(user, "managePayments");
+
   const tenantId = str(formData, "tenantId");
   const apartmentId = str(formData, "apartmentId");
   const amount = num(formData, "amount");
@@ -92,6 +132,8 @@ export async function createPayment(formData: FormData) {
   if (!tenantId || !apartmentId || !amount || !periodMonth || !periodYear) {
     return;
   }
+  requireApartmentAccess(user, apartmentId);
+
   await prisma.payment.create({
     data: {
       tenantId,
@@ -109,13 +151,35 @@ export async function createPayment(formData: FormData) {
 }
 
 export async function deletePayment(formData: FormData) {
+  const user = await requireUser();
+  requirePermission(user, "managePayments");
+
   const id = str(formData, "id");
+  const payment = await prisma.payment.findUnique({ where: { id } });
+  if (!payment) return;
+  requireApartmentAccess(user, payment.apartmentId);
+
   await prisma.payment.delete({ where: { id } });
   revalidatePath("/payments");
   revalidatePath("/");
 }
 
+/** For expenses not tied to one apartment: the user must manage at least
+ * one apartment for that owner (or have unrestricted scope). */
+async function requireOwnerAccess(user: CurrentUser, ownerId: string) {
+  if (user.role.scopeAllApartments) return;
+  const count = await prisma.apartment.count({
+    where: { ownerId, id: { in: user.apartmentIds } },
+  });
+  if (count === 0) {
+    throw new Error("No tienes acceso a ningún apartamento de este dueño.");
+  }
+}
+
 export async function createExpense(formData: FormData) {
+  const user = await requireUser();
+  requirePermission(user, "manageExpenses");
+
   const target = str(formData, "target"); // "apt:<id>" or "owner:<id>"
   const description = str(formData, "description");
   const amount = num(formData, "amount");
@@ -134,10 +198,12 @@ export async function createExpense(formData: FormData) {
       where: { id: apartmentIdVal },
     });
     if (!apartment) return;
+    requireApartmentAccess(user, apartment.id);
     ownerId = apartment.ownerId;
     apartmentId = apartment.id;
   } else if (target.startsWith("owner:")) {
     ownerId = target.slice(6);
+    await requireOwnerAccess(user, ownerId);
   } else {
     return;
   }
@@ -161,7 +227,19 @@ export async function createExpense(formData: FormData) {
 }
 
 export async function deleteExpense(formData: FormData) {
+  const user = await requireUser();
+  requirePermission(user, "manageExpenses");
+
   const id = str(formData, "id");
+  const expense = await prisma.expense.findUnique({ where: { id } });
+  if (!expense) return;
+
+  if (expense.apartmentId) {
+    requireApartmentAccess(user, expense.apartmentId);
+  } else {
+    await requireOwnerAccess(user, expense.ownerId);
+  }
+
   await prisma.expense.delete({ where: { id } });
   revalidatePath("/expenses");
   revalidatePath("/");

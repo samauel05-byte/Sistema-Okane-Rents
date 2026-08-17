@@ -1,20 +1,31 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatMoney, monthLabel } from "@/lib/format";
+import { requireUser, accessibleApartmentIds } from "@/lib/auth";
 
 export default async function DashboardPage() {
+  const user = await requireUser();
+  const ids = accessibleApartmentIds(user);
   const now = new Date();
   const periodMonth = now.getMonth() + 1;
   const periodYear = now.getFullYear();
 
   const owners = await prisma.owner.findMany({
+    where: ids ? { apartments: { some: { id: { in: ids } } } } : undefined,
     include: {
       apartments: {
+        where: ids ? { id: { in: ids } } : undefined,
         include: {
           payments: { where: { periodMonth, periodYear } },
         },
       },
-      expenses: { where: { periodMonth, periodYear } },
+      expenses: {
+        where: {
+          periodMonth,
+          periodYear,
+          ...(ids ? { OR: [{ apartmentId: { in: ids } }, { apartmentId: null }] } : {}),
+        },
+      },
     },
     orderBy: { name: "asc" },
   });
