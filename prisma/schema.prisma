@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Owner {
+  id         String      @id @default(cuid())
+  name       String
+  email      String?
+  phone      String?
+  notes      String?
+  createdAt  DateTime    @default(now())
+  apartments Apartment[]
+  expenses   Expense[]
+}
+
+model Apartment {
+  id          String    @id @default(cuid())
+  label       String
+  address     String?
+  rentAmount  Float
+  owner       Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId     String
+  createdAt   DateTime  @default(now())
+  tenants     Tenant[]
+  payments    Payment[]
+  expenses    Expense[]
+}
+
+model Tenant {
+  id          String     @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  active      Boolean    @default(true)
+  moveInDate  DateTime?
+  apartment   Apartment  @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  apartmentId String
+  createdAt   DateTime   @default(now())
+  payments    Payment[]
+}
+
+// A rent payment collected from a tenant, attributed to the month it covers.
+model Payment {
+  id          String    @id @default(cuid())
+  amount      Float
+  paidOn      DateTime  @default(now())
+  periodMonth Int
+  periodYear  Int
+  method      String?
+  notes       String?
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId    String
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  apartmentId String
+  createdAt   DateTime  @default(now())
+}
+
+// A cost paid on behalf of the owner (repairs, maintenance, etc.) that
+// reduces the amount owed to them for the month it's attributed to.
+model Expense {
+  id          String     @id @default(cuid())
+  description String
+  amount      Float
+  incurredOn  DateTime   @default(now())
+  periodMonth Int
+  periodYear  Int
+  category    String?
+  owner       Owner      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId     String
+  apartment   Apartment? @relation(fields: [apartmentId], references: [id], onDelete: SetNull)
+  apartmentId String?
+  createdAt   DateTime   @default(now())
+}
