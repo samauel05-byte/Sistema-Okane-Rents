@@ -54,14 +54,14 @@ export default async function OwnerReportPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between no-print">
+      <div className="flex flex-col gap-3 no-print sm:flex-row sm:items-center sm:justify-between">
         <Link
           href={`/owners/${owner.id}`}
           className="text-sm text-slate-500 hover:underline"
         >
           ← {owner.name}
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <Link
             href={`/reports/${owner.id}?month=${prev.month}&year=${prev.year}`}
             className="rounded-md border border-slate-300 px-2 py-1 text-sm hover:bg-slate-100"
@@ -78,15 +78,15 @@ export default async function OwnerReportPage({
         </div>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
-        <div className="mb-6 flex items-start justify-between border-b border-slate-100 pb-4">
+      <div className="rounded-lg border border-slate-200 bg-white p-4 sm:p-6">
+        <div className="mb-6 flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h1 className="text-xl font-semibold">Reporte mensual</h1>
             <p className="text-sm text-slate-500">
               {monthLabel(periodMonth, periodYear)}
             </p>
           </div>
-          <div className="text-right">
+          <div className="sm:text-right">
             <p className="font-medium">{owner.name}</p>
             <p className="text-sm text-slate-500">
               {[owner.email, owner.phone].filter(Boolean).join(" · ")}
@@ -95,44 +95,46 @@ export default async function OwnerReportPage({
         </div>
 
         <h2 className="mb-2 font-semibold">Cobros por apartamento</h2>
-        <table className="mb-6 w-full text-sm">
-          <thead className="text-left text-xs uppercase text-slate-500">
-            <tr>
-              <th className="py-2">Apartamento</th>
-              <th className="py-2">Inquilino</th>
-              <th className="py-2 text-right">Renta mensual</th>
-              <th className="py-2 text-right">Cobrado en el mes</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {owner.apartments.map((apt) => {
-              const collected = apt.payments.reduce((s, p) => s + p.amount, 0);
-              const tenant = apt.tenants[0];
-              return (
-                <tr key={apt.id}>
-                  <td className="py-2">{apt.label}</td>
-                  <td className="py-2">{tenant?.name ?? "— sin asignar —"}</td>
-                  <td className="py-2 text-right">{formatMoney(apt.rentAmount)}</td>
-                  <td className="py-2 text-right font-medium">
-                    {collected > 0 ? (
-                      formatMoney(collected)
-                    ) : (
-                      <span className="text-rose-500">Sin cobrar</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-          <tfoot>
-            <tr className="border-t border-slate-200 font-semibold">
-              <td className="py-2" colSpan={3}>
-                Total cobrado
-              </td>
-              <td className="py-2 text-right">{formatMoney(totalCollected)}</td>
-            </tr>
-          </tfoot>
-        </table>
+        <div className="mb-6 overflow-x-auto">
+          <table className="w-full min-w-[520px] text-sm">
+            <thead className="text-left text-xs uppercase text-slate-500">
+              <tr>
+                <th className="py-2">Apartamento</th>
+                <th className="py-2">Inquilino</th>
+                <th className="py-2 text-right">Renta mensual</th>
+                <th className="py-2 text-right">Cobrado en el mes</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {owner.apartments.map((apt) => {
+                const collected = apt.payments.reduce((s, p) => s + p.amount, 0);
+                const tenant = apt.tenants[0];
+                return (
+                  <tr key={apt.id}>
+                    <td className="py-2">{apt.label}</td>
+                    <td className="py-2">{tenant?.name ?? "— sin asignar —"}</td>
+                    <td className="py-2 text-right">{formatMoney(apt.rentAmount)}</td>
+                    <td className="py-2 text-right font-medium">
+                      {collected > 0 ? (
+                        formatMoney(collected)
+                      ) : (
+                        <span className="text-rose-500">Sin cobrar</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+            <tfoot>
+              <tr className="border-t border-slate-200 font-semibold">
+                <td className="py-2" colSpan={3}>
+                  Total cobrado
+                </td>
+                <td className="py-2 text-right">{formatMoney(totalCollected)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
 
         <h2 className="mb-2 font-semibold">
           Gastos pagados en representación del dueño
@@ -142,41 +144,43 @@ export default async function OwnerReportPage({
             No hubo gastos este mes.
           </p>
         ) : (
-          <table className="mb-6 w-full text-sm">
-            <thead className="text-left text-xs uppercase text-slate-500">
-              <tr>
-                <th className="py-2">Fecha</th>
-                <th className="py-2">Apartamento</th>
-                <th className="py-2">Descripción</th>
-                <th className="py-2 text-right">Monto</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {owner.expenses.map((e) => (
-                <tr key={e.id}>
-                  <td className="py-2">{formatDate(e.incurredOn)}</td>
-                  <td className="py-2">{e.apartment?.label ?? "General"}</td>
-                  <td className="py-2">{e.description}</td>
+          <div className="mb-6 overflow-x-auto">
+            <table className="w-full min-w-[520px] text-sm">
+              <thead className="text-left text-xs uppercase text-slate-500">
+                <tr>
+                  <th className="py-2">Fecha</th>
+                  <th className="py-2">Apartamento</th>
+                  <th className="py-2">Descripción</th>
+                  <th className="py-2 text-right">Monto</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {owner.expenses.map((e) => (
+                  <tr key={e.id}>
+                    <td className="py-2">{formatDate(e.incurredOn)}</td>
+                    <td className="py-2">{e.apartment?.label ?? "General"}</td>
+                    <td className="py-2">{e.description}</td>
+                    <td className="py-2 text-right text-rose-600">
+                      -{formatMoney(e.amount)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="border-t border-slate-200 font-semibold">
+                  <td className="py-2" colSpan={3}>
+                    Total gastos
+                  </td>
                   <td className="py-2 text-right text-rose-600">
-                    -{formatMoney(e.amount)}
+                    -{formatMoney(totalExpenses)}
                   </td>
                 </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr className="border-t border-slate-200 font-semibold">
-                <td className="py-2" colSpan={3}>
-                  Total gastos
-                </td>
-                <td className="py-2 text-right text-rose-600">
-                  -{formatMoney(totalExpenses)}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+              </tfoot>
+            </table>
+          </div>
         )}
 
-        <div className="flex items-center justify-between rounded-md bg-slate-900 px-4 py-3 text-white">
+        <div className="flex flex-col gap-1 rounded-md bg-slate-900 px-4 py-3 text-white sm:flex-row sm:items-center sm:justify-between sm:gap-0">
           <span className="font-medium">Monto neto a pagarle al dueño</span>
           <span className="text-lg font-semibold">{formatMoney(netToOwner)}</span>
         </div>

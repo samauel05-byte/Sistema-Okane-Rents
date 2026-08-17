@@ -23,11 +23,11 @@ export default function RootLayout({
     <html lang="es" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">
         <header className="border-b border-slate-200 bg-white print:hidden">
-          <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+          <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
             <Link href="/" className="text-lg font-semibold text-slate-900">
               Okane
             </Link>
-            <nav className="flex gap-4 text-sm font-medium text-slate-600">
+            <nav className="-mx-2 flex flex-wrap gap-1 text-sm font-medium text-slate-600 sm:gap-2">
               {NAV_ITEMS.map((item) => (
                 <Link
                   key={item.href}
@@ -40,7 +40,7 @@ export default function RootLayout({
             </nav>
           </div>
         </header>
-        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
+        <main className="mx-auto w-full max-w-5xl min-w-0 flex-1 px-4 py-6">
           {children}
         </main>
       </body>

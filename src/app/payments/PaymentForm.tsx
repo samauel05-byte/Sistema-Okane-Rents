@@ -38,7 +38,7 @@ export default function PaymentForm({
           setApartmentId(e.target.value);
           setAmount(apt ? String(apt.rentAmount) : "");
         }}
-        className="rounded-md border border-slate-300 px-3 py-2 text-sm sm:col-span-2"
+        className="w-full min-w-0 rounded-md border border-slate-300 px-3 py-2 text-sm sm:col-span-2"
       >
         <option value="">Selecciona apartamento / inquilino</option>
         {apartments.map((apt) => (
@@ -66,7 +66,7 @@ export default function PaymentForm({
       <select
         name="periodMonth"
         defaultValue={now.getMonth() + 1}
-        className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+        className="w-full min-w-0 rounded-md border border-slate-300 px-3 py-2 text-sm"
       >
         {MONTH_NAMES.map((m, i) => (
           <option key={m} value={i + 1}>

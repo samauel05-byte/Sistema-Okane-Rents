@@ -24,4 +24,7 @@ body {
   body {
     background: white;
   }
+  table {
+    min-width: 0 !important;
+  }
 }

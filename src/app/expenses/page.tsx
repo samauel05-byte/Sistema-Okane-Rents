@@ -32,7 +32,7 @@ export default async function ExpensesPage() {
           <select
             name="target"
             required
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm sm:col-span-2"
+            className="w-full min-w-0 rounded-md border border-slate-300 px-3 py-2 text-sm sm:col-span-2"
           >
             <option value="">Selecciona apartamento o dueño</option>
             {owners.map((owner) => (
@@ -74,7 +74,7 @@ export default async function ExpensesPage() {
           <select
             name="periodMonth"
             defaultValue={now.getMonth() + 1}
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="w-full min-w-0 rounded-md border border-slate-300 px-3 py-2 text-sm"
           >
             {MONTH_NAMES.map((m, i) => (
               <option key={m} value={i + 1}>
@@ -112,7 +112,7 @@ export default async function ExpensesPage() {
           <p className="p-4 text-sm text-slate-500">Aún no hay gastos registrados.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[720px] text-sm">
               <thead className="text-left text-xs uppercase text-slate-500">
                 <tr>
                   <th className="p-3">Fecha</th>

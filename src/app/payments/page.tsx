@@ -44,7 +44,7 @@ export default async function PaymentsPage() {
           <p className="p-4 text-sm text-slate-500">Aún no hay cobros registrados.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[760px] text-sm">
               <thead className="text-left text-xs uppercase text-slate-500">
                 <tr>
                   <th className="p-3">Fecha</th>

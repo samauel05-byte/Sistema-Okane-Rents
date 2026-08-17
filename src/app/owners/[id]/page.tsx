@@ -33,7 +33,7 @@ export default async function OwnerDetailPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link href="/owners" className="text-sm text-slate-500 hover:underline">
             ← Dueños
@@ -43,7 +43,7 @@ export default async function OwnerDetailPage({
             {[owner.email, owner.phone].filter(Boolean).join(" · ") || "Sin datos de contacto"}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Link
             href={`/reports/${owner.id}?month=${now.getMonth() + 1}&year=${now.getFullYear()}`}
             className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700"
