@@ -15,6 +15,7 @@ export default async function AppLayout({
     { href: "/owners", label: "Dueños" },
     { href: "/payments", label: "Cobros" },
     { href: "/expenses", label: "Gastos" },
+    { href: "/invoices", label: "Facturas" },
     ...(user.role.manageUsers
       ? [{ href: "/admin/users", label: "Usuarios" }]
       : []),

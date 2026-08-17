@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatDate, formatMoney, monthLabel } from "@/lib/format";
 import { requireUser, accessibleApartmentIds } from "@/lib/auth";
-import PrintButton from "../PrintButton";
+import PrintButton from "@/components/PrintButton";
 
 function shiftMonth(month: number, year: number, delta: number) {
   const d = new Date(year, month - 1 + delta, 1);

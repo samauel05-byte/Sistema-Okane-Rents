@@ -73,6 +73,11 @@ export default async function OwnersPage() {
               placeholder="Teléfono (opcional)"
               className="rounded-md border border-slate-300 px-3 py-2 text-sm"
             />
+            <input
+              name="rnc"
+              placeholder="RNC/Cédula (opcional)"
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+            />
             <button
               type="submit"
               className="sm:col-span-3 rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700"
