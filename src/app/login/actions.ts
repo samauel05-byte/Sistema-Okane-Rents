@@ -73,6 +73,7 @@ export async function setupAdmin(
         manageApartments: true,
         managePayments: true,
         manageExpenses: true,
+        manageInvoices: true,
         viewReports: true,
       },
     });
@@ -91,6 +92,7 @@ export async function setupAdmin(
         manageApartments: false,
         managePayments: true,
         manageExpenses: true,
+        manageInvoices: true,
         viewReports: true,
       },
     });

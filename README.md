@@ -17,6 +17,12 @@ El **reporte mensual** de un dueño muestra, por apartamento, la renta cobrada
 en el mes, resta los gastos pagados en su nombre, y calcula el monto neto a
 pagarle.
 
+Desde **Facturas** se puede generar un **recibo de pago** para un inquilino
+(por una renta cobrada) o una **factura de gestión** para un dueño (por el
+servicio de administración), ambos con numeración consecutiva, NCF/RNC
+opcionales y listos para imprimir/guardar como PDF. Los datos del negocio que
+aparecen como emisor se configuran en `/admin/business`.
+
 ## Desarrollo local
 
 ```bash

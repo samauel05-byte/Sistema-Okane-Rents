@@ -20,6 +20,9 @@ export default async function AdminLayout({
           <Link href="/admin/roles" className="border-b-2 border-transparent px-1 pb-2 hover:text-slate-900">
             Roles
           </Link>
+          <Link href="/admin/business" className="border-b-2 border-transparent px-1 pb-2 hover:text-slate-900">
+            Negocio
+          </Link>
         </nav>
       </div>
       {children}

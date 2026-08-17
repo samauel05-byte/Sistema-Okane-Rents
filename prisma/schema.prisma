@@ -15,10 +15,12 @@ model Owner {
   name       String
   email      String?
   phone      String?
+  rnc        String?
   notes      String?
   createdAt  DateTime    @default(now())
   apartments Apartment[]
   expenses   Expense[]
+  invoices   Invoice[]
 }
 
 model Apartment {
@@ -32,6 +34,7 @@ model Apartment {
   tenants     Tenant[]
   payments    Payment[]
   expenses    Expense[]
+  invoices    Invoice[]
   userAccess  UserApartmentAccess[]
 }
 
@@ -40,12 +43,14 @@ model Tenant {
   name        String
   email       String?
   phone       String?
+  rnc         String?
   active      Boolean    @default(true)
   moveInDate  DateTime?
   apartment   Apartment  @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
   apartmentId String
   createdAt   DateTime   @default(now())
   payments    Payment[]
+  invoices    Invoice[]
 }
 
 // A rent payment collected from a tenant, attributed to the month it covers.
@@ -96,6 +101,7 @@ model Role {
   manageApartments   Boolean  @default(false)
   managePayments     Boolean  @default(false)
   manageExpenses     Boolean  @default(false)
+  manageInvoices     Boolean  @default(false)
   viewReports        Boolean  @default(false)
   createdAt          DateTime @default(now())
   users              User[]
@@ -133,4 +139,42 @@ model Session {
   userId    String
   expiresAt DateTime
   createdAt DateTime @default(now())
+}
+
+// Business identity used as the header/issuer on every printed invoice or
+// receipt, plus the running consecutive-number counters. Single row.
+model BusinessSettings {
+  id                String   @id @default("singleton")
+  businessName      String?
+  businessRnc       String?
+  address           String?
+  phone             String?
+  email             String?
+  nextReceiptNumber Int      @default(1)
+  nextInvoiceNumber Int      @default(1)
+  updatedAt         DateTime @updatedAt
+}
+
+// A printable receipt (to a tenant, confirming a rent payment) or invoice
+// (to an owner, billing for management services). "type" picks which.
+model Invoice {
+  id          String     @id @default(cuid())
+  type        String // "TENANT" (recibo de pago) | "OWNER" (factura de gestión)
+  number      Int
+  ncf         String?
+  issuedOn    DateTime   @default(now())
+  concept     String
+  amount      Float
+  clientName  String
+  clientRnc   String?
+  notes       String?
+  periodMonth Int?
+  periodYear  Int?
+  owner       Owner?     @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  ownerId     String?
+  apartment   Apartment? @relation(fields: [apartmentId], references: [id], onDelete: SetNull)
+  apartmentId String?
+  tenant      Tenant?    @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  tenantId    String?
+  createdAt   DateTime   @default(now())
 }

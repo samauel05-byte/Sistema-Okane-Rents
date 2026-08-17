@@ -5,6 +5,7 @@ export const PERMISSIONS = [
   "manageApartments",
   "managePayments",
   "manageExpenses",
+  "manageInvoices",
   "viewReports",
 ] as const;
 
@@ -16,5 +17,6 @@ export const PERMISSION_LABELS: Record<Permission, string> = {
   manageApartments: "Crear/eliminar apartamentos, asignar inquilinos",
   managePayments: "Registrar y eliminar cobros",
   manageExpenses: "Registrar y eliminar gastos",
+  manageInvoices: "Crear y eliminar facturas/recibos",
   viewReports: "Ver reportes mensuales",
 };

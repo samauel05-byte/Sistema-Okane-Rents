@@ -142,6 +142,11 @@ export default async function OwnerDetailPage({
                           placeholder="Correo (opcional)"
                           className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
                         />
+                        <input
+                          name="rnc"
+                          placeholder="RNC/Cédula (opcional)"
+                          className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                        />
                         <button
                           type="submit"
                           className="rounded-md bg-slate-900 px-2 py-1.5 text-xs font-medium text-white hover:bg-slate-700"

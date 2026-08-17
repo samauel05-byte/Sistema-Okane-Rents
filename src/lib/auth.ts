@@ -54,6 +54,7 @@ type RolePermissions = {
   manageApartments: boolean;
   managePayments: boolean;
   manageExpenses: boolean;
+  manageInvoices: boolean;
   viewReports: boolean;
 };
 

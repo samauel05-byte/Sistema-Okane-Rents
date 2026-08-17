@@ -12,6 +12,7 @@ export type RoleData = {
   manageApartments: boolean;
   managePayments: boolean;
   manageExpenses: boolean;
+  manageInvoices: boolean;
   viewReports: boolean;
 };
 

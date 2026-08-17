@@ -9,6 +9,7 @@ import {
   requireApartmentAccess,
   type CurrentUser,
 } from "@/lib/auth";
+import { nextInvoiceNumber } from "@/lib/business";
 
 function str(formData: FormData, key: string) {
   const v = formData.get(key);
@@ -43,6 +44,7 @@ export async function createOwner(formData: FormData) {
       name,
       email: str(formData, "email") || null,
       phone: str(formData, "phone") || null,
+      rnc: str(formData, "rnc") || null,
     },
   });
   revalidatePath("/owners");
@@ -114,6 +116,7 @@ export async function createTenant(formData: FormData) {
       name,
       email: str(formData, "email") || null,
       phone: str(formData, "phone") || null,
+      rnc: str(formData, "rnc") || null,
       moveInDate: new Date(),
     },
   });
@@ -243,4 +246,108 @@ export async function deleteExpense(formData: FormData) {
   await prisma.expense.delete({ where: { id } });
   revalidatePath("/expenses");
   revalidatePath("/");
+}
+
+export async function createInvoice(formData: FormData) {
+  const user = await requireUser();
+  requirePermission(user, "manageInvoices");
+
+  const type = str(formData, "type") === "OWNER" ? "OWNER" : "TENANT";
+  const amount = num(formData, "amount");
+  const concept = str(formData, "concept");
+  if (!amount || !concept) return;
+
+  const ncf = str(formData, "ncf") || null;
+  const notes = str(formData, "notes") || null;
+  const issuedOn = str(formData, "issuedOn")
+    ? new Date(str(formData, "issuedOn"))
+    : new Date();
+  const periodMonth = str(formData, "periodMonth") ? num(formData, "periodMonth") : null;
+  const periodYear = str(formData, "periodYear") ? num(formData, "periodYear") : null;
+  const clientRncInput = str(formData, "clientRnc") || null;
+
+  if (type === "TENANT") {
+    const apartmentId = str(formData, "apartmentId");
+    if (!apartmentId) return;
+    requireApartmentAccess(user, apartmentId);
+
+    const apartment = await prisma.apartment.findUnique({
+      where: { id: apartmentId },
+      include: { tenants: { where: { active: true } } },
+    });
+    const tenant = apartment?.tenants[0];
+    if (!apartment || !tenant) return;
+
+    const number = await nextInvoiceNumber("TENANT");
+    await prisma.invoice.create({
+      data: {
+        type: "TENANT",
+        number,
+        ncf,
+        issuedOn,
+        concept,
+        amount,
+        clientName: tenant.name,
+        clientRnc: clientRncInput ?? tenant.rnc,
+        notes,
+        periodMonth,
+        periodYear,
+        ownerId: apartment.ownerId,
+        apartmentId: apartment.id,
+        tenantId: tenant.id,
+      },
+    });
+  } else {
+    const ownerId = str(formData, "ownerId");
+    if (!ownerId) return;
+    const apartmentId = str(formData, "apartmentId") || null;
+
+    if (apartmentId) {
+      requireApartmentAccess(user, apartmentId);
+    } else {
+      await requireOwnerAccess(user, ownerId);
+    }
+
+    const owner = await prisma.owner.findUnique({ where: { id: ownerId } });
+    if (!owner) return;
+
+    const number = await nextInvoiceNumber("OWNER");
+    await prisma.invoice.create({
+      data: {
+        type: "OWNER",
+        number,
+        ncf,
+        issuedOn,
+        concept,
+        amount,
+        clientName: owner.name,
+        clientRnc: clientRncInput ?? owner.rnc,
+        notes,
+        periodMonth,
+        periodYear,
+        ownerId: owner.id,
+        apartmentId,
+      },
+    });
+  }
+
+  revalidatePath("/invoices");
+}
+
+export async function deleteInvoice(formData: FormData) {
+  const user = await requireUser();
+  requirePermission(user, "manageInvoices");
+
+  const id = str(formData, "id");
+  const invoice = await prisma.invoice.findUnique({ where: { id } });
+  if (!invoice) return;
+
+  if (invoice.apartmentId) {
+    requireApartmentAccess(user, invoice.apartmentId);
+  } else if (invoice.ownerId) {
+    await requireOwnerAccess(user, invoice.ownerId);
+  }
+
+  await prisma.invoice.delete({ where: { id } });
+  revalidatePath("/invoices");
 }
