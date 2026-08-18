@@ -45,21 +45,31 @@ export default async function InvoiceDetailPage({
 
       <div className="rounded-lg border border-slate-200 bg-white p-4 sm:p-6">
         <div className="mb-6 flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <p className="text-sm font-medium text-slate-500">
-              {business.businessName ?? "Nombre del negocio no configurado"}
-            </p>
-            {business.businessRnc && (
-              <p className="text-xs text-slate-500">RNC: {business.businessRnc}</p>
+          <div className="flex items-start gap-3">
+            {business.logoDataUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={business.logoDataUrl}
+                alt={business.businessName ?? "Logo"}
+                className="h-12 w-auto shrink-0"
+              />
             )}
-            {business.address && (
-              <p className="text-xs text-slate-500">{business.address}</p>
-            )}
-            {(business.phone || business.email) && (
-              <p className="text-xs text-slate-500">
-                {[business.phone, business.email].filter(Boolean).join(" · ")}
+            <div>
+              <p className="text-sm font-medium text-slate-500">
+                {business.businessName ?? "Nombre del negocio no configurado"}
               </p>
-            )}
+              {business.businessRnc && (
+                <p className="text-xs text-slate-500">RNC: {business.businessRnc}</p>
+              )}
+              {business.address && (
+                <p className="text-xs text-slate-500">{business.address}</p>
+              )}
+              {(business.phone || business.email) && (
+                <p className="text-xs text-slate-500">
+                  {[business.phone, business.email].filter(Boolean).join(" · ")}
+                </p>
+              )}
+            </div>
           </div>
           <div className="sm:text-right">
             <h1 className="text-xl font-semibold">{docLabel}</h1>
