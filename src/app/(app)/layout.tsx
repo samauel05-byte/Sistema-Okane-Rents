@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth";
 import { logout } from "@/app/login/actions";
 import Logo from "@/app/Logo";
 import SidebarNav from "./SidebarNav";
+import IdleLogout from "./IdleLogout";
 import {
   IconGrid,
   IconUsers,
@@ -51,6 +52,7 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-dvh flex-col sm:flex-row">
+      <IdleLogout />
       <aside className="hidden shrink-0 flex-col bg-slate-900 sm:flex sm:w-60 print:hidden">
         <div className="border-b border-white/10 px-4 py-4">
           <Link href="/">
