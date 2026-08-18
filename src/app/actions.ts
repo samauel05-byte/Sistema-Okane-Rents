@@ -10,7 +10,7 @@ import {
   type CurrentUser,
 } from "@/lib/auth";
 import { nextInvoiceNumber } from "@/lib/business";
-import { DEFAULT_CURRENCY, isCurrency } from "@/lib/format";
+import { DEFAULT_CURRENCY, isCurrency, MONTH_NAMES } from "@/lib/format";
 
 function currency(formData: FormData, key: string) {
   const v = str(formData, key);
@@ -237,7 +237,30 @@ export async function createPayment(formData: FormData) {
   requireApartmentAccess(user, apartmentId);
 
   const apartment = await prisma.apartment.findUnique({ where: { id: apartmentId } });
-  if (!apartment) return;
+  const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
+  if (!apartment || !tenant) return;
+
+  const paidOn = str(formData, "paidOn") ? new Date(str(formData, "paidOn")) : new Date();
+
+  // Auto-generate the tenant's receipt for this payment.
+  const invoiceNumber = await nextInvoiceNumber("TENANT");
+  const invoice = await prisma.invoice.create({
+    data: {
+      type: "TENANT",
+      number: invoiceNumber,
+      issuedOn: paidOn,
+      concept: `Pago de renta correspondiente a ${MONTH_NAMES[periodMonth - 1]} ${periodYear} — ${apartment.label}`,
+      amount,
+      currency: apartment.currency,
+      clientName: tenant.name,
+      clientRnc: tenant.rnc,
+      periodMonth,
+      periodYear,
+      ownerId: apartment.ownerId,
+      apartmentId: apartment.id,
+      tenantId: tenant.id,
+    },
+  });
 
   await prisma.payment.create({
     data: {
@@ -249,10 +272,12 @@ export async function createPayment(formData: FormData) {
       periodYear,
       method: str(formData, "method") || null,
       notes: str(formData, "notes") || null,
-      paidOn: str(formData, "paidOn") ? new Date(str(formData, "paidOn")) : new Date(),
+      paidOn,
+      invoiceId: invoice.id,
     },
   });
   revalidatePath("/payments");
+  revalidatePath("/invoices");
   revalidatePath("/");
 }
 
@@ -369,6 +394,7 @@ export async function createInvoice(formData: FormData) {
   const periodMonth = str(formData, "periodMonth") ? num(formData, "periodMonth") : null;
   const periodYear = str(formData, "periodYear") ? num(formData, "periodYear") : null;
   const clientRncInput = str(formData, "clientRnc") || null;
+  const applyItbis = str(formData, "applyItbis") === "on";
 
   if (type === "TENANT") {
     const apartmentId = str(formData, "apartmentId");
@@ -392,6 +418,7 @@ export async function createInvoice(formData: FormData) {
         concept,
         amount,
         currency: apartment.currency,
+        applyItbis,
         clientName: tenant.name,
         clientRnc: clientRncInput ?? tenant.rnc,
         notes,
@@ -426,6 +453,7 @@ export async function createInvoice(formData: FormData) {
         concept,
         amount,
         currency: currency(formData, "currency"),
+        applyItbis,
         clientName: owner.name,
         clientRnc: clientRncInput ?? owner.rnc,
         notes,

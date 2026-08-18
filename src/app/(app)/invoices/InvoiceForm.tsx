@@ -191,6 +191,11 @@ export default function InvoiceForm({
         className="rounded-md border border-slate-300 px-3 py-2 text-sm sm:col-span-3"
       />
 
+      <label className="flex items-center gap-2 text-sm sm:col-span-3">
+        <input type="checkbox" name="applyItbis" />
+        Agregar ITBIS (18%)
+      </label>
+
       <button
         type="submit"
         disabled={type === "TENANT" ? !selectedApartment?.tenantId : !ownerId}
