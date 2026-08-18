@@ -171,6 +171,16 @@ export async function updateApartmentTerms(formData: FormData) {
   revalidatePath(`/owners/${apartment.ownerId}`);
 }
 
+/** Adds years/months of contract duration to a start date, if either was given. */
+function contractEndFromDuration(moveInDate: Date, formData: FormData) {
+  const years = optionalNum(formData, "contractYears") ?? 0;
+  const months = optionalNum(formData, "contractMonths") ?? 0;
+  if (years <= 0 && months <= 0) return null;
+  const end = new Date(moveInDate);
+  end.setMonth(end.getMonth() + years * 12 + months);
+  return end;
+}
+
 export async function createTenant(formData: FormData) {
   const user = await requireUser();
   requirePermission(user, "manageApartments");
@@ -191,6 +201,8 @@ export async function createTenant(formData: FormData) {
     data: { active: false },
   });
 
+  const moveInDate = optionalDate(formData, "moveInDate") ?? new Date();
+
   await prisma.tenant.create({
     data: {
       apartmentId,
@@ -198,11 +210,22 @@ export async function createTenant(formData: FormData) {
       email,
       phone,
       rnc: str(formData, "rnc") || null,
-      moveInDate: new Date(),
+      moveInDate,
+      contractEnd: contractEndFromDuration(moveInDate, formData),
     },
   });
+
+  const newPaymentDueDay = paymentDueDay(formData);
+  if (newPaymentDueDay !== null) {
+    await prisma.apartment.update({
+      where: { id: apartmentId },
+      data: { paymentDueDay: newPaymentDueDay },
+    });
+  }
+
   revalidatePath(`/owners/${apartment.ownerId}`);
   revalidatePath("/tenants");
+  revalidatePath(`/reports/${apartmentId}`);
 }
 
 export async function updateTenant(formData: FormData) {

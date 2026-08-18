@@ -93,6 +93,40 @@ export default async function TenantsPage() {
               placeholder="RNC/Cédula (opcional)"
               className="rounded-md border border-slate-700 px-3 py-2 text-sm sm:col-span-2"
             />
+            <label className="text-xs text-slate-400">
+              Inicio de contrato
+              <input
+                name="moveInDate"
+                type="date"
+                defaultValue={new Date().toISOString().slice(0, 10)}
+                className="mt-1 w-full rounded-md border border-slate-700 px-3 py-2 text-sm"
+              />
+            </label>
+            <input
+              name="paymentDueDay"
+              type="number"
+              min="1"
+              max="31"
+              placeholder="Día de pago (opcional, 1-31)"
+              className="rounded-md border border-slate-700 px-3 py-2 text-sm"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                name="contractYears"
+                type="number"
+                min="0"
+                placeholder="Duración: años"
+                className="rounded-md border border-slate-700 px-3 py-2 text-sm"
+              />
+              <input
+                name="contractMonths"
+                type="number"
+                min="0"
+                max="11"
+                placeholder="Duración: meses"
+                className="rounded-md border border-slate-700 px-3 py-2 text-sm"
+              />
+            </div>
             <button
               type="submit"
               className="rounded-md bg-[#D2491C] px-3 py-2 text-sm font-medium text-white hover:bg-[#b83d17] sm:col-span-3"
