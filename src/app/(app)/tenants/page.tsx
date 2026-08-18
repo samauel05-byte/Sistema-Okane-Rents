@@ -52,7 +52,7 @@ export default async function TenantsPage() {
             <select
               name="apartmentId"
               required
-              className="w-full min-w-0 rounded-md border border-slate-700 px-3 py-2 text-sm sm:col-span-3"
+              className="w-full min-w-0 rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-50 sm:col-span-3"
             >
               <option value="">Selecciona apartamento</option>
               {owners.map((owner) => (
@@ -171,27 +171,27 @@ export default async function TenantsPage() {
                                   name="name"
                                   defaultValue={current.name}
                                   required
-                                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                                  className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-50"
                                 />
                                 <input
                                   name="phone"
                                   defaultValue={current.phone ?? ""}
                                   placeholder="Teléfono"
                                   required
-                                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                                  className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-50"
                                 />
                                 <input
                                   name="email"
                                   defaultValue={current.email ?? ""}
                                   placeholder="Correo"
                                   required
-                                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                                  className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-50"
                                 />
                                 <input
                                   name="rnc"
                                   defaultValue={current.rnc ?? ""}
                                   placeholder="RNC/Cédula"
-                                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                                  className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-50"
                                 />
                                 <label className="text-xs text-slate-400">
                                   Fin de contrato
@@ -205,7 +205,7 @@ export default async function TenantsPage() {
                                 <select
                                   name="contractStatus"
                                   defaultValue={current.contractStatus ?? ""}
-                                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                                  className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-50"
                                 >
                                   <option value="">Estatus del contrato</option>
                                   {CONTRACT_STATUSES.map((s) => (
@@ -240,7 +240,7 @@ export default async function TenantsPage() {
                                   max="31"
                                   defaultValue={apt.paymentDueDay ?? ""}
                                   placeholder="Día de pago"
-                                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                                  className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-50"
                                 />
                                 <input
                                   name="lateFeePercent"
@@ -250,7 +250,7 @@ export default async function TenantsPage() {
                                   max="10"
                                   defaultValue={apt.lateFeePercent ?? ""}
                                   placeholder="Mora % (máx. 10)"
-                                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                                  className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-50"
                                 />
                                 <input
                                   name="managementCommissionPercent"
@@ -260,13 +260,13 @@ export default async function TenantsPage() {
                                   max="30"
                                   defaultValue={apt.managementCommissionPercent ?? ""}
                                   placeholder="Comisión % (máx. 30)"
-                                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                                  className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-50"
                                 />
                                 <input
                                   name="managerName"
                                   defaultValue={apt.managerName ?? ""}
                                   placeholder="Encargado/a"
-                                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                                  className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-50"
                                 />
                                 <button
                                   type="submit"
