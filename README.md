@@ -47,6 +47,13 @@ también crea automáticamente los roles "Administrador" y "Gestor".
   permisos específicos (cobros, gastos, apartamentos, reportes) y decidir si
   ese rol ve todos los apartamentos o solo los que se le asignen por usuario.
 
+## Despliegue
+
+En Vercel, el build de producción (`scripts/build.sh`) corre
+`prisma migrate deploy` automáticamente antes de compilar, así que cualquier
+migración nueva se aplica sola al desplegar a producción — no hace falta
+correrla a mano. Los builds de preview no tocan la base de datos.
+
 ## Stack
 
 - Next.js (App Router) + TypeScript + Tailwind CSS
