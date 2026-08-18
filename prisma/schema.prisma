@@ -150,6 +150,7 @@ model BusinessSettings {
   address           String?
   phone             String?
   email             String?
+  logoDataUrl       String?
   nextReceiptNumber Int      @default(1)
   nextInvoiceNumber Int      @default(1)
   updatedAt         DateTime @updatedAt
