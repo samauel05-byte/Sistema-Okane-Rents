@@ -3,6 +3,7 @@
 :root {
   --background: #020617;
   --foreground: #f8fafc;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -20,6 +21,9 @@ body {
   nav,
   .no-print {
     display: none !important;
+  }
+  :root {
+    color-scheme: light;
   }
   body {
     background: white;

@@ -39,8 +39,6 @@ export default async function OwnerDetailPage({
     user.role.manageApartments && user.role.scopeAllApartments;
   const canManageApartments = user.role.manageApartments;
 
-  const now = new Date();
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -54,12 +52,6 @@ export default async function OwnerDetailPage({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link
-            href={`/reports/${owner.id}?month=${now.getMonth() + 1}&year=${now.getFullYear()}`}
-            className="rounded-md bg-[#D2491C] px-3 py-2 text-sm font-medium text-white hover:bg-[#b83d17]"
-          >
-            Ver reporte mensual
-          </Link>
           {canDeleteOwner && (
             <form action={deleteOwner}>
               <input type="hidden" name="id" value={owner.id} />
@@ -119,6 +111,12 @@ export default async function OwnerDetailPage({
                       {tenant ? tenant.name : "— sin asignar —"}
                     </span>
                   </p>
+                  <Link
+                    href={`/reports/${apt.id}`}
+                    className="mt-2 inline-block text-xs font-medium text-[#e2703a] hover:underline"
+                  >
+                    Ver reporte mensual →
+                  </Link>
 
                   {canManageApartments && (
                     <details className="mt-3">
@@ -135,13 +133,15 @@ export default async function OwnerDetailPage({
                         />
                         <input
                           name="phone"
-                          placeholder="Teléfono (opcional)"
+                          placeholder="Teléfono"
+                          required
                           className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
                         />
                         <input
                           name="email"
                           type="email"
-                          placeholder="Correo (opcional)"
+                          placeholder="Correo"
+                          required
                           className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
                         />
                         <input
@@ -216,6 +216,20 @@ export default async function OwnerDetailPage({
               min="0"
               max="10"
               placeholder="Mora % (opcional, máx. 10)"
+              className="rounded-md border border-slate-700 px-3 py-2 text-sm"
+            />
+            <input
+              name="managementCommissionPercent"
+              type="number"
+              step="0.1"
+              min="0"
+              max="30"
+              placeholder="Comisión de gestión % (opcional, máx. 30)"
+              className="rounded-md border border-slate-700 px-3 py-2 text-sm"
+            />
+            <input
+              name="managerName"
+              placeholder="Encargado/a (opcional)"
               className="rounded-md border border-slate-700 px-3 py-2 text-sm"
             />
             <button

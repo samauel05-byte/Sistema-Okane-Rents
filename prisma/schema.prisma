@@ -34,6 +34,11 @@ model Apartment {
   // Late fee charged when overdue, as a % of the rent (0-10) — varies by
   // owner, so it's just a plain configurable value rather than a fixed rule.
   lateFeePercent Float?
+  // Management commission, as a % of rent collected, deducted in the
+  // owner's monthly report.
+  managementCommissionPercent Float?
+  // Name shown as "Gestor asignado" on the monthly report.
+  managerName String?
   owner       Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId     String
   createdAt   DateTime  @default(now())
@@ -42,6 +47,7 @@ model Apartment {
   expenses    Expense[]
   invoices    Invoice[]
   userAccess  UserApartmentAccess[]
+  reportStatuses ReportStatus[]
 }
 
 model Tenant {
@@ -52,6 +58,10 @@ model Tenant {
   rnc         String?
   active      Boolean    @default(true)
   moveInDate  DateTime?
+  // Lease end date and status shown on the monthly report ("Fin de
+  // contrato" / "Estado del contrato": Vigente, En renovación, Por vencer).
+  contractEnd DateTime?
+  contractStatus String?
   apartment   Apartment  @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
   apartmentId String
   createdAt   DateTime   @default(now())
@@ -90,6 +100,8 @@ model Expense {
   periodMonth Int
   periodYear  Int
   category    String?
+  // Who's responsible for it — shown in the report's incidents table.
+  responsible String?
   owner       Owner      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId     String
   apartment   Apartment? @relation(fields: [apartmentId], references: [id], onDelete: SetNull)
@@ -192,4 +204,22 @@ model Invoice {
   tenantId    String?
   createdAt   DateTime   @default(now())
   payment     Payment?
+}
+
+// Owner-payout tracking and freeform notes for one apartment's monthly
+// report — "Estatus de pago al propietario" and "Observaciones".
+model ReportStatus {
+  id                 String    @id @default(cuid())
+  apartment          Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  apartmentId        String
+  periodMonth        Int
+  periodYear         Int
+  payoutStatus       String    @default("PENDIENTE") // "PENDIENTE" | "REMITIDO"
+  paidOn             DateTime?
+  paymentMethod      String?
+  destinationAccount String?
+  notes              String?
+  updatedAt          DateTime  @updatedAt
+
+  @@unique([apartmentId, periodMonth, periodYear])
 }

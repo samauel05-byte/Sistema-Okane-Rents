@@ -65,12 +65,14 @@ export default async function OwnersPage() {
             <input
               name="email"
               type="email"
-              placeholder="Correo (opcional)"
+              placeholder="Correo"
+              required
               className="rounded-md border border-slate-700 px-3 py-2 text-sm"
             />
             <input
               name="phone"
-              placeholder="Teléfono (opcional)"
+              placeholder="Teléfono"
+              required
               className="rounded-md border border-slate-700 px-3 py-2 text-sm"
             />
             <input
