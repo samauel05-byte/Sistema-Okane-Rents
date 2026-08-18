@@ -127,7 +127,6 @@ export default async function OwnerDetailPage({
                       </summary>
                       <form action={createTenant} className="mt-2 grid gap-2">
                         <input type="hidden" name="apartmentId" value={apt.id} />
-                        <input type="hidden" name="ownerId" value={owner.id} />
                         <input
                           name="name"
                           placeholder="Nombre del inquilino"
