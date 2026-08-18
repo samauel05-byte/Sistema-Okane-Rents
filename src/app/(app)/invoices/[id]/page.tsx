@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { formatDate, formatMoney, itbisAmount, monthLabel } from "@/lib/format";
+import { formatDate, formatMoney, monthLabel } from "@/lib/format";
 import { getBusinessSettings } from "@/lib/business";
 import { requireUser, canAccessApartment } from "@/lib/auth";
 import PrintButton from "@/components/PrintButton";
@@ -28,8 +28,6 @@ export default async function InvoiceDetailPage({
     if (count === 0) notFound();
   }
 
-  const itbis = invoice.applyItbis ? itbisAmount(invoice.amount) : 0;
-  const total = invoice.amount + itbis;
   const business = await getBusinessSettings();
   const docLabel = invoice.type === "TENANT" ? "Recibo de pago" : "Factura";
   const docNumber = `${invoice.type === "TENANT" ? "R" : "F"}-${String(
@@ -110,26 +108,6 @@ export default async function InvoiceDetailPage({
               <td className="py-3 text-right">{formatMoney(invoice.amount, invoice.currency)}</td>
             </tr>
           </tbody>
-          {invoice.applyItbis && (
-            <tfoot>
-              <tr>
-                <td className="pt-2 text-right text-slate-500" colSpan={invoice.periodMonth ? 2 : 1}>
-                  Subtotal
-                </td>
-                <td className="pt-2 text-right text-slate-500">
-                  {formatMoney(invoice.amount, invoice.currency)}
-                </td>
-              </tr>
-              <tr>
-                <td className="text-right text-slate-500" colSpan={invoice.periodMonth ? 2 : 1}>
-                  ITBIS (18%)
-                </td>
-                <td className="text-right text-slate-500">
-                  {formatMoney(itbis, invoice.currency)}
-                </td>
-              </tr>
-            </tfoot>
-          )}
         </table>
 
         {invoice.notes && (
@@ -138,7 +116,7 @@ export default async function InvoiceDetailPage({
 
         <div className="flex items-center justify-between rounded-md bg-slate-900 px-4 py-3 text-white">
           <span className="font-medium">Total</span>
-          <span className="text-lg font-semibold">{formatMoney(total, invoice.currency)}</span>
+          <span className="text-lg font-semibold">{formatMoney(invoice.amount, invoice.currency)}</span>
         </div>
       </div>
     </div>

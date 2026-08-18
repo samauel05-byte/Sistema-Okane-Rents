@@ -33,20 +33,20 @@ export default async function TenantsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Inquilinos</h1>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-400">
           Inquilino activo por apartamento, día de pago, mora, y su historial
           de inquilinos anteriores.
         </p>
       </div>
 
       {canManage && (
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
+        <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
           <h2 className="mb-3 font-semibold">Asignar inquilino</h2>
           <form action={createTenant} className="grid gap-3 sm:grid-cols-3">
             <select
               name="apartmentId"
               required
-              className="w-full min-w-0 rounded-md border border-slate-300 px-3 py-2 text-sm sm:col-span-3"
+              className="w-full min-w-0 rounded-md border border-slate-700 px-3 py-2 text-sm sm:col-span-3"
             >
               <option value="">Selecciona apartamento</option>
               {owners.map((owner) => (
@@ -67,27 +67,27 @@ export default async function TenantsPage() {
               name="name"
               placeholder="Nombre del inquilino"
               required
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-md border border-slate-700 px-3 py-2 text-sm"
             />
             <input
               name="phone"
               placeholder="Teléfono (opcional)"
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-md border border-slate-700 px-3 py-2 text-sm"
             />
             <input
               name="email"
               type="email"
               placeholder="Correo (opcional)"
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-md border border-slate-700 px-3 py-2 text-sm"
             />
             <input
               name="rnc"
               placeholder="RNC/Cédula (opcional)"
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm sm:col-span-2"
+              className="rounded-md border border-slate-700 px-3 py-2 text-sm sm:col-span-2"
             />
             <button
               type="submit"
-              className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700 sm:col-span-3"
+              className="rounded-md bg-[#D2491C] px-3 py-2 text-sm font-medium text-white hover:bg-[#b83d17] sm:col-span-3"
             >
               Guardar
             </button>
@@ -97,16 +97,16 @@ export default async function TenantsPage() {
 
       <div className="space-y-4">
         {owners.length === 0 ? (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-400">
             Aún no hay apartamentos ni inquilinos registrados.
           </p>
         ) : (
           owners.map((owner) => (
-            <div key={owner.id} className="rounded-lg border border-slate-200 bg-white">
-              <h2 className="border-b border-slate-100 p-4 font-semibold">
+            <div key={owner.id} className="rounded-lg border border-slate-800 bg-slate-900">
+              <h2 className="border-b border-slate-800 p-4 font-semibold">
                 {owner.name}
               </h2>
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-slate-800">
                 {owner.apartments.map((apt) => {
                   const current = apt.tenants.find((t) => t.active);
                   const previous = apt.tenants.filter((t) => !t.active);
@@ -119,29 +119,29 @@ export default async function TenantsPage() {
                     <div key={apt.id} className="p-4">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                          <p className="text-xs uppercase text-slate-500">{apt.label}</p>
+                          <p className="text-xs uppercase text-slate-400">{apt.label}</p>
                           {current ? (
                             <>
                               <p
-                                className={`font-medium ${isLate ? "text-rose-600" : ""}`}
+                                className={`font-medium ${isLate ? "text-rose-400" : ""}`}
                               >
                                 {current.name}
                                 {isLate && (
-                                  <span className="ml-2 rounded bg-rose-100 px-1.5 py-0.5 text-xs font-semibold text-rose-700">
+                                  <span className="ml-2 rounded bg-rose-900 px-1.5 py-0.5 text-xs font-semibold text-rose-300">
                                     {overdue} meses atrasado
                                   </span>
                                 )}
                               </p>
-                              <p className="text-sm text-slate-500">
+                              <p className="text-sm text-slate-400">
                                 {[current.phone, current.email, current.rnc]
                                   .filter(Boolean)
                                   .join(" · ") || "Sin datos de contacto"}
                               </p>
                             </>
                           ) : (
-                            <p className="text-sm text-slate-500">— Sin asignar —</p>
+                            <p className="text-sm text-slate-400">— Sin asignar —</p>
                           )}
-                          <p className="mt-1 text-xs text-slate-400">
+                          <p className="mt-1 text-xs text-slate-500">
                             {apt.paymentDueDay
                               ? `Vence el día ${apt.paymentDueDay} de cada mes`
                               : "Sin día de pago configurado"}
@@ -151,7 +151,7 @@ export default async function TenantsPage() {
                         <div className="flex flex-wrap gap-3 text-xs">
                           {canManage && current && (
                             <details>
-                              <summary className="cursor-pointer font-medium text-slate-600">
+                              <summary className="cursor-pointer font-medium text-slate-300">
                                 Editar
                               </summary>
                               <form
@@ -163,29 +163,29 @@ export default async function TenantsPage() {
                                   name="name"
                                   defaultValue={current.name}
                                   required
-                                  className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
                                 />
                                 <input
                                   name="phone"
                                   defaultValue={current.phone ?? ""}
                                   placeholder="Teléfono"
-                                  className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
                                 />
                                 <input
                                   name="email"
                                   defaultValue={current.email ?? ""}
                                   placeholder="Correo"
-                                  className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
                                 />
                                 <input
                                   name="rnc"
                                   defaultValue={current.rnc ?? ""}
                                   placeholder="RNC/Cédula"
-                                  className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
                                 />
                                 <button
                                   type="submit"
-                                  className="rounded-md bg-slate-900 px-2 py-1.5 text-xs font-medium text-white hover:bg-slate-700"
+                                  className="rounded-md bg-[#D2491C] px-2 py-1.5 text-xs font-medium text-white hover:bg-[#b83d17]"
                                 >
                                   Guardar cambios
                                 </button>
@@ -194,7 +194,7 @@ export default async function TenantsPage() {
                           )}
                           {canManage && (
                             <details>
-                              <summary className="cursor-pointer font-medium text-slate-600">
+                              <summary className="cursor-pointer font-medium text-slate-300">
                                 Día de pago / mora
                               </summary>
                               <form
@@ -209,7 +209,7 @@ export default async function TenantsPage() {
                                   max="31"
                                   defaultValue={apt.paymentDueDay ?? ""}
                                   placeholder="Día de pago"
-                                  className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
                                 />
                                 <input
                                   name="lateFeePercent"
@@ -219,11 +219,11 @@ export default async function TenantsPage() {
                                   max="10"
                                   defaultValue={apt.lateFeePercent ?? ""}
                                   placeholder="Mora % (máx. 10)"
-                                  className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
                                 />
                                 <button
                                   type="submit"
-                                  className="rounded-md bg-slate-900 px-2 py-1.5 text-xs font-medium text-white hover:bg-slate-700"
+                                  className="rounded-md bg-[#D2491C] px-2 py-1.5 text-xs font-medium text-white hover:bg-[#b83d17]"
                                 >
                                   Guardar
                                 </button>
@@ -235,7 +235,7 @@ export default async function TenantsPage() {
                               <input type="hidden" name="id" value={current.id} />
                               <button
                                 type="submit"
-                                className="font-medium text-rose-500 hover:underline"
+                                className="font-medium text-rose-400 hover:underline"
                               >
                                 Quitar inquilino
                               </button>
@@ -246,10 +246,10 @@ export default async function TenantsPage() {
 
                       {previous.length > 0 && (
                         <details className="mt-3">
-                          <summary className="cursor-pointer text-xs font-medium text-slate-500">
+                          <summary className="cursor-pointer text-xs font-medium text-slate-400">
                             Inquilinos anteriores ({previous.length})
                           </summary>
-                          <ul className="mt-2 space-y-1 text-xs text-slate-500">
+                          <ul className="mt-2 space-y-1 text-xs text-slate-400">
                             {previous.map((t) => (
                               <li key={t.id}>
                                 {t.name}

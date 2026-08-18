@@ -30,7 +30,7 @@ export default async function PaymentsPage() {
       <h1 className="text-2xl font-semibold">Cobros a inquilinos</h1>
 
       {user.role.managePayments && (
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
+        <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
           <h2 className="mb-3 font-semibold">Registrar cobro</h2>
           <PaymentForm
             apartments={apartments.map((apt) => ({
@@ -46,19 +46,19 @@ export default async function PaymentsPage() {
         </div>
       )}
 
-      <div className="rounded-lg border border-slate-200 bg-white">
-        <h2 className="border-b border-slate-100 p-4 font-semibold">
+      <div className="rounded-lg border border-slate-800 bg-slate-900">
+        <h2 className="border-b border-slate-800 p-4 font-semibold">
           Cobros recientes
         </h2>
         {payments.length === 0 ? (
-          <p className="p-4 text-sm text-slate-500">Aún no hay cobros registrados.</p>
+          <p className="p-4 text-sm text-slate-400">Aún no hay cobros registrados.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-sm">
-              <thead className="text-left text-xs uppercase text-slate-500">
+              <thead className="text-left text-xs uppercase text-slate-400">
                 <tr>
                   <th className="p-3">Fecha</th>
-                  <th className="p-3">Dueño</th>
+                  <th className="p-3">Propietario</th>
                   <th className="p-3">Apartamento</th>
                   <th className="p-3">Inquilino</th>
                   <th className="p-3">Periodo</th>
@@ -67,7 +67,7 @@ export default async function PaymentsPage() {
                   <th className="p-3" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-800">
                 {payments.map((p) => (
                   <tr key={p.id}>
                     <td className="p-3">{formatDate(p.paidOn)}</td>
@@ -84,7 +84,7 @@ export default async function PaymentsPage() {
                         {p.invoiceId && (
                           <Link
                             href={`/invoices/${p.invoiceId}`}
-                            className="text-xs font-medium text-slate-600 hover:underline"
+                            className="text-xs font-medium text-slate-300 hover:underline"
                           >
                             Ver recibo
                           </Link>
@@ -94,7 +94,7 @@ export default async function PaymentsPage() {
                             <input type="hidden" name="id" value={p.id} />
                             <button
                               type="submit"
-                              className="text-xs text-rose-500 hover:underline"
+                              className="text-xs text-rose-400 hover:underline"
                             >
                               Eliminar
                             </button>

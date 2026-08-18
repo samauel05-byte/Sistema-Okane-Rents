@@ -41,7 +41,7 @@ export default async function InvoicesPage() {
       <h1 className="text-2xl font-semibold">Facturas y recibos</h1>
 
       {user.role.manageInvoices && (
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
+        <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
           <h2 className="mb-3 font-semibold">Generar factura / recibo</h2>
           <InvoiceForm
             apartments={apartments.map((apt) => ({
@@ -58,18 +58,18 @@ export default async function InvoicesPage() {
         </div>
       )}
 
-      <div className="rounded-lg border border-slate-200 bg-white">
-        <h2 className="border-b border-slate-100 p-4 font-semibold">
+      <div className="rounded-lg border border-slate-800 bg-slate-900">
+        <h2 className="border-b border-slate-800 p-4 font-semibold">
           Emitidas recientemente
         </h2>
         {invoices.length === 0 ? (
-          <p className="p-4 text-sm text-slate-500">
+          <p className="p-4 text-sm text-slate-400">
             Aún no has generado ninguna factura o recibo.
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] text-sm">
-              <thead className="text-left text-xs uppercase text-slate-500">
+              <thead className="text-left text-xs uppercase text-slate-400">
                 <tr>
                   <th className="p-3">Fecha</th>
                   <th className="p-3">Tipo</th>
@@ -80,7 +80,7 @@ export default async function InvoicesPage() {
                   <th className="p-3" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-800">
                 {invoices.map((inv) => (
                   <tr key={inv.id}>
                     <td className="p-3">{formatDate(inv.issuedOn)}</td>
@@ -100,7 +100,7 @@ export default async function InvoicesPage() {
                       <div className="flex justify-end gap-3">
                         <Link
                           href={`/invoices/${inv.id}`}
-                          className="text-xs font-medium text-slate-600 hover:underline"
+                          className="text-xs font-medium text-slate-300 hover:underline"
                         >
                           Ver / imprimir
                         </Link>
@@ -109,7 +109,7 @@ export default async function InvoicesPage() {
                             <input type="hidden" name="id" value={inv.id} />
                             <button
                               type="submit"
-                              className="text-xs text-rose-500 hover:underline"
+                              className="text-xs text-rose-400 hover:underline"
                             >
                               Eliminar
                             </button>

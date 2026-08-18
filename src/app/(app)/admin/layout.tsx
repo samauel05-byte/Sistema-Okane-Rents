@@ -13,14 +13,14 @@ export default async function AdminLayout({
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Administración</h1>
-        <nav className="mt-3 flex gap-4 border-b border-slate-200 text-sm font-medium text-slate-600">
-          <Link href="/admin/users" className="border-b-2 border-transparent px-1 pb-2 hover:text-slate-900">
+        <nav className="mt-3 flex gap-4 border-b border-slate-800 text-sm font-medium text-slate-300">
+          <Link href="/admin/users" className="border-b-2 border-transparent px-1 pb-2 hover:text-slate-50">
             Usuarios
           </Link>
-          <Link href="/admin/roles" className="border-b-2 border-transparent px-1 pb-2 hover:text-slate-900">
+          <Link href="/admin/roles" className="border-b-2 border-transparent px-1 pb-2 hover:text-slate-50">
             Roles
           </Link>
-          <Link href="/admin/business" className="border-b-2 border-transparent px-1 pb-2 hover:text-slate-900">
+          <Link href="/admin/business" className="border-b-2 border-transparent px-1 pb-2 hover:text-slate-50">
             Negocio
           </Link>
         </nav>

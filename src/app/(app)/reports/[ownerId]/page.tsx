@@ -176,11 +176,11 @@ export default async function OwnerReportPage({
         </div>
 
         <h2 className="mb-2 font-semibold">
-          Gastos pagados en representación del dueño
+          Eventualidades pagadas en representación del propietario
         </h2>
         {owner.expenses.length === 0 ? (
           <p className="mb-6 text-sm text-slate-500">
-            No hubo gastos este mes.
+            No hubo eventualidades este mes.
           </p>
         ) : (
           <div className="mb-6 overflow-x-auto">
@@ -208,7 +208,7 @@ export default async function OwnerReportPage({
               <tfoot>
                 <tr className="border-t border-slate-200 font-semibold">
                   <td className="py-2" colSpan={3}>
-                    Total gastos
+                    Total eventualidades
                   </td>
                   <td className="py-2 text-right text-rose-600">
                     -{formatMoneyByCurrency(owner.expenses)}
@@ -220,7 +220,7 @@ export default async function OwnerReportPage({
         )}
 
         <div className="flex flex-col gap-1 rounded-md bg-slate-900 px-4 py-3 text-white sm:flex-row sm:items-center sm:justify-between sm:gap-0">
-          <span className="font-medium">Monto neto a pagarle al dueño</span>
+          <span className="font-medium">Monto neto a pagarle al propietario</span>
           <span className="text-right text-lg font-semibold">
             {netGroups.length === 0
               ? formatMoney(0)
