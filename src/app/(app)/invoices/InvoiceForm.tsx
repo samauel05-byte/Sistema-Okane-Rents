@@ -76,7 +76,7 @@ export default function InvoiceForm({
               );
             }
           }}
-          className="w-full min-w-0 rounded-md border border-slate-700 px-3 py-2 text-sm sm:col-span-3"
+          className="w-full min-w-0 rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-50 sm:col-span-3"
         >
           <option value="">Selecciona apartamento / inquilino</option>
           {apartments.map((apt) => (
@@ -100,7 +100,7 @@ export default function InvoiceForm({
               );
             }
           }}
-          className="w-full min-w-0 rounded-md border border-slate-700 px-3 py-2 text-sm sm:col-span-3"
+          className="w-full min-w-0 rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-50 sm:col-span-3"
         >
           <option value="">Selecciona propietario</option>
           {owners.map((o) => (
@@ -140,7 +140,7 @@ export default function InvoiceForm({
           <select
             name="currency"
             defaultValue={DEFAULT_CURRENCY}
-            className="w-full min-w-0 rounded-md border border-slate-700 px-3 py-2 text-sm"
+            className="w-full min-w-0 rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-50"
           >
             {CURRENCIES.map((c) => (
               <option key={c} value={c}>

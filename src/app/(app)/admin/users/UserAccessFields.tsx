@@ -26,7 +26,7 @@ export default function UserAccessFields({
         required
         value={roleId}
         onChange={(e) => setRoleId(e.target.value)}
-        className="w-full min-w-0 rounded-md border border-slate-700 px-3 py-2 text-sm"
+        className="w-full min-w-0 rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-50"
       >
         {roles.map((r) => (
           <option key={r.id} value={r.id}>

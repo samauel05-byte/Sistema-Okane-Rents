@@ -225,7 +225,7 @@ export default async function ApartmentReportPage({
               <select
                 name="payoutStatus"
                 defaultValue={reportStatus?.payoutStatus ?? "PENDIENTE"}
-                className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900"
               >
                 {PAYOUT_STATUSES.map((s) => (
                   <option key={s} value={s}>
@@ -241,19 +241,19 @@ export default async function ApartmentReportPage({
                     ? reportStatus.paidOn.toISOString().slice(0, 10)
                     : ""
                 }
-                className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900"
               />
               <input
                 name="paymentMethod"
                 defaultValue={reportStatus?.paymentMethod ?? ""}
                 placeholder="Método de pago"
-                className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900"
               />
               <input
                 name="destinationAccount"
                 defaultValue={reportStatus?.destinationAccount ?? ""}
                 placeholder="Cuenta destino"
-                className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900"
               />
               <input type="hidden" name="notes" value={reportStatus?.notes ?? ""} />
               <button
@@ -347,7 +347,7 @@ export default async function ApartmentReportPage({
                 defaultValue={reportStatus?.notes ?? ""}
                 rows={3}
                 placeholder="Renovación de contrato, novedades del inquilino, recomendaciones al propietario, etc."
-                className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900"
               />
               <button
                 type="submit"
