@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { formatDate, formatMoney } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import { monthsOverdue } from "@/lib/rent";
 import {
   createTenant,
@@ -145,9 +145,7 @@ export default async function TenantsPage() {
                             {apt.paymentDueDay
                               ? `Vence el día ${apt.paymentDueDay} de cada mes`
                               : "Sin día de pago configurado"}
-                            {apt.lateFeeAmount
-                              ? ` · Mora: ${formatMoney(apt.lateFeeAmount, apt.currency)}`
-                              : ""}
+                            {apt.lateFeePercent ? ` · Mora: ${apt.lateFeePercent}%` : ""}
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-3 text-xs">
@@ -214,12 +212,13 @@ export default async function TenantsPage() {
                                   className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
                                 />
                                 <input
-                                  name="lateFeeAmount"
+                                  name="lateFeePercent"
                                   type="number"
-                                  step="0.01"
+                                  step="0.1"
                                   min="0"
-                                  defaultValue={apt.lateFeeAmount ?? ""}
-                                  placeholder="Mora"
+                                  max="10"
+                                  defaultValue={apt.lateFeePercent ?? ""}
+                                  placeholder="Mora % (máx. 10)"
                                   className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
                                 />
                                 <button
