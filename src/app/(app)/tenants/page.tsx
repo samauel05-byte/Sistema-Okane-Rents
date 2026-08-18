@@ -1,6 +1,12 @@
 import { prisma } from "@/lib/prisma";
-import { formatDate } from "@/lib/format";
-import { createTenant, updateTenant, deactivateTenant } from "@/app/actions";
+import { formatDate, formatMoney } from "@/lib/format";
+import { monthsOverdue } from "@/lib/rent";
+import {
+  createTenant,
+  updateTenant,
+  deactivateTenant,
+  updateApartmentTerms,
+} from "@/app/actions";
 import { requireUser, accessibleApartmentIds } from "@/lib/auth";
 
 export default async function TenantsPage() {
@@ -15,6 +21,7 @@ export default async function TenantsPage() {
         where: ids ? { id: { in: ids } } : undefined,
         include: {
           tenants: { orderBy: { createdAt: "desc" } },
+          payments: { select: { periodMonth: true, periodYear: true } },
         },
         orderBy: { label: "asc" },
       },
@@ -27,8 +34,8 @@ export default async function TenantsPage() {
       <div>
         <h1 className="text-2xl font-semibold">Inquilinos</h1>
         <p className="text-sm text-slate-500">
-          Inquilino activo por apartamento, y su historial de inquilinos
-          anteriores.
+          Inquilino activo por apartamento, día de pago, mora, y su historial
+          de inquilinos anteriores.
         </p>
       </div>
 
@@ -103,6 +110,11 @@ export default async function TenantsPage() {
                 {owner.apartments.map((apt) => {
                   const current = apt.tenants.find((t) => t.active);
                   const previous = apt.tenants.filter((t) => !t.active);
+                  const overdue = current
+                    ? monthsOverdue(apt.payments, apt.paymentDueDay, current.moveInDate)
+                    : 0;
+                  const isLate = overdue > 2;
+
                   return (
                     <div key={apt.id} className="p-4">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -110,7 +122,16 @@ export default async function TenantsPage() {
                           <p className="text-xs uppercase text-slate-500">{apt.label}</p>
                           {current ? (
                             <>
-                              <p className="font-medium">{current.name}</p>
+                              <p
+                                className={`font-medium ${isLate ? "text-rose-600" : ""}`}
+                              >
+                                {current.name}
+                                {isLate && (
+                                  <span className="ml-2 rounded bg-rose-100 px-1.5 py-0.5 text-xs font-semibold text-rose-700">
+                                    {overdue} meses atrasado
+                                  </span>
+                                )}
+                              </p>
                               <p className="text-sm text-slate-500">
                                 {[current.phone, current.email, current.rnc]
                                   .filter(Boolean)
@@ -120,9 +141,17 @@ export default async function TenantsPage() {
                           ) : (
                             <p className="text-sm text-rose-500">— Vacante —</p>
                           )}
+                          <p className="mt-1 text-xs text-slate-400">
+                            {apt.paymentDueDay
+                              ? `Vence el día ${apt.paymentDueDay} de cada mes`
+                              : "Sin día de pago configurado"}
+                            {apt.lateFeeAmount
+                              ? ` · Mora: ${formatMoney(apt.lateFeeAmount, apt.currency)}`
+                              : ""}
+                          </p>
                         </div>
-                        {canManage && current && (
-                          <div className="flex flex-wrap gap-3 text-xs">
+                        <div className="flex flex-wrap gap-3 text-xs">
+                          {canManage && current && (
                             <details>
                               <summary className="cursor-pointer font-medium text-slate-600">
                                 Editar
@@ -164,6 +193,45 @@ export default async function TenantsPage() {
                                 </button>
                               </form>
                             </details>
+                          )}
+                          {canManage && (
+                            <details>
+                              <summary className="cursor-pointer font-medium text-slate-600">
+                                Día de pago / mora
+                              </summary>
+                              <form
+                                action={updateApartmentTerms}
+                                className="mt-2 grid w-48 gap-2"
+                              >
+                                <input type="hidden" name="id" value={apt.id} />
+                                <input
+                                  name="paymentDueDay"
+                                  type="number"
+                                  min="1"
+                                  max="31"
+                                  defaultValue={apt.paymentDueDay ?? ""}
+                                  placeholder="Día de pago"
+                                  className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                                />
+                                <input
+                                  name="lateFeeAmount"
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  defaultValue={apt.lateFeeAmount ?? ""}
+                                  placeholder="Mora"
+                                  className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                                />
+                                <button
+                                  type="submit"
+                                  className="rounded-md bg-slate-900 px-2 py-1.5 text-xs font-medium text-white hover:bg-slate-700"
+                                >
+                                  Guardar
+                                </button>
+                              </form>
+                            </details>
+                          )}
+                          {canManage && current && (
                             <form action={deactivateTenant}>
                               <input type="hidden" name="id" value={current.id} />
                               <button
@@ -173,8 +241,8 @@ export default async function TenantsPage() {
                                 Marcar como vacante
                               </button>
                             </form>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
 
                       {previous.length > 0 && (

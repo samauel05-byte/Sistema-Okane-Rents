@@ -29,6 +29,11 @@ model Apartment {
   address     String?
   rentAmount  Float
   currency    String    @default("DOP")
+  // Day of the month (1-31) rent is due; null = not tracked.
+  paymentDueDay Int?
+  // Late fee charged when overdue — varies by owner, so it's just a plain
+  // configurable amount rather than a fixed rule.
+  lateFeeAmount Float?
   owner       Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId     String
   createdAt   DateTime  @default(now())

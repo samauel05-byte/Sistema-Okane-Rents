@@ -28,6 +28,21 @@ function num(formData: FormData, key: string) {
   return Number.isFinite(n) ? n : 0;
 }
 
+/** Parses an optional numeric field: empty/invalid input means "not set". */
+function optionalNum(formData: FormData, key: string) {
+  const v = str(formData, key);
+  if (!v) return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+function paymentDueDay(formData: FormData) {
+  const n = optionalNum(formData, "paymentDueDay");
+  if (n === null) return null;
+  const day = Math.round(n);
+  return day >= 1 && day <= 31 ? day : null;
+}
+
 /** Creating brand-new owners/apartments is out of the "assigned apartments"
  * model, so it's reserved for roles with unrestricted (global) scope. */
 function requireGlobalScope(user: CurrentUser) {
@@ -84,6 +99,8 @@ export async function createApartment(formData: FormData) {
       address: str(formData, "address") || null,
       rentAmount,
       currency: currency(formData, "currency"),
+      paymentDueDay: paymentDueDay(formData),
+      lateFeeAmount: optionalNum(formData, "lateFeeAmount"),
     },
   });
   revalidatePath(`/owners/${ownerId}`);
@@ -99,6 +116,25 @@ export async function deleteApartment(formData: FormData) {
 
   await prisma.apartment.delete({ where: { id } });
   revalidatePath(`/owners/${ownerId}`);
+}
+
+export async function updateApartmentTerms(formData: FormData) {
+  const user = await requireUser();
+  requirePermission(user, "manageApartments");
+
+  const id = str(formData, "id");
+  if (!id) return;
+  requireApartmentAccess(user, id);
+
+  const apartment = await prisma.apartment.update({
+    where: { id },
+    data: {
+      paymentDueDay: paymentDueDay(formData),
+      lateFeeAmount: optionalNum(formData, "lateFeeAmount"),
+    },
+  });
+  revalidatePath("/tenants");
+  revalidatePath(`/owners/${apartment.ownerId}`);
 }
 
 export async function createTenant(formData: FormData) {

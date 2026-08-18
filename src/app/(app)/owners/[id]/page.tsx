@@ -201,6 +201,22 @@ export default async function OwnerDetailPage({
                 </option>
               ))}
             </select>
+            <input
+              name="paymentDueDay"
+              type="number"
+              min="1"
+              max="31"
+              placeholder="Día de pago (opcional, 1-31)"
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+            />
+            <input
+              name="lateFeeAmount"
+              type="number"
+              step="0.01"
+              min="0"
+              placeholder="Mora (opcional)"
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+            />
             <button
               type="submit"
               className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700 sm:col-span-4"
