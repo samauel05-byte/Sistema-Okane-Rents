@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, CURRENCIES, CURRENCY_LABELS, DEFAULT_CURRENCY } from "@/lib/format";
 import {
   createApartment,
   createTenant,
@@ -108,7 +108,10 @@ export default async function OwnerDetailPage({
                     )}
                   </div>
                   <p className="mt-2 text-sm">
-                    Renta: <span className="font-medium">{formatMoney(apt.rentAmount)}</span>
+                    Renta:{" "}
+                    <span className="font-medium">
+                      {formatMoney(apt.rentAmount, apt.currency)}
+                    </span>
                   </p>
                   <p className="text-sm">
                     Inquilino:{" "}
@@ -188,9 +191,20 @@ export default async function OwnerDetailPage({
               required
               className="rounded-md border border-slate-300 px-3 py-2 text-sm"
             />
+            <select
+              name="currency"
+              defaultValue={DEFAULT_CURRENCY}
+              className="w-full min-w-0 rounded-md border border-slate-300 px-3 py-2 text-sm"
+            >
+              {CURRENCIES.map((c) => (
+                <option key={c} value={c}>
+                  {CURRENCY_LABELS[c]}
+                </option>
+              ))}
+            </select>
             <button
               type="submit"
-              className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700"
+              className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700 sm:col-span-4"
             >
               Guardar apartamento
             </button>

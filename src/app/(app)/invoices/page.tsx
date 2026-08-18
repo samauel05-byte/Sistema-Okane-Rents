@@ -49,6 +49,7 @@ export default async function InvoicesPage() {
               label: apt.label,
               ownerName: apt.owner.name,
               rentAmount: apt.rentAmount,
+              currency: apt.currency,
               tenantId: apt.tenants[0]?.id ?? null,
               tenantName: apt.tenants[0]?.name ?? null,
             }))}
@@ -93,7 +94,7 @@ export default async function InvoicesPage() {
                     <td className="p-3">{inv.clientName}</td>
                     <td className="p-3">{inv.concept}</td>
                     <td className="p-3 text-right font-medium">
-                      {formatMoney(inv.amount)}
+                      {formatMoney(inv.amount, inv.currency)}
                     </td>
                     <td className="p-3 text-right">
                       <div className="flex justify-end gap-3">

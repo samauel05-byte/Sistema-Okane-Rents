@@ -105,7 +105,7 @@ export default async function InvoiceDetailPage({
                   {monthLabel(invoice.periodMonth, invoice.periodYear)}
                 </td>
               )}
-              <td className="py-3 text-right">{formatMoney(invoice.amount)}</td>
+              <td className="py-3 text-right">{formatMoney(invoice.amount, invoice.currency)}</td>
             </tr>
           </tbody>
         </table>
@@ -116,7 +116,7 @@ export default async function InvoiceDetailPage({
 
         <div className="flex items-center justify-between rounded-md bg-slate-900 px-4 py-3 text-white">
           <span className="font-medium">Total</span>
-          <span className="text-lg font-semibold">{formatMoney(invoice.amount)}</span>
+          <span className="text-lg font-semibold">{formatMoney(invoice.amount, invoice.currency)}</span>
         </div>
       </div>
     </div>

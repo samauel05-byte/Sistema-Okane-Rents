@@ -28,6 +28,7 @@ model Apartment {
   label       String
   address     String?
   rentAmount  Float
+  currency    String    @default("DOP")
   owner       Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId     String
   createdAt   DateTime  @default(now())
@@ -57,6 +58,7 @@ model Tenant {
 model Payment {
   id          String    @id @default(cuid())
   amount      Float
+  currency    String    @default("DOP")
   paidOn      DateTime  @default(now())
   periodMonth Int
   periodYear  Int
@@ -75,6 +77,7 @@ model Expense {
   id          String     @id @default(cuid())
   description String
   amount      Float
+  currency    String     @default("DOP")
   incurredOn  DateTime   @default(now())
   periodMonth Int
   periodYear  Int
@@ -167,6 +170,7 @@ model Invoice {
   issuedOn    DateTime   @default(now())
   concept     String
   amount      Float
+  currency    String     @default("DOP")
   clientName  String
   clientRnc   String?
   notes       String?

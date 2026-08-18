@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { formatMoney, monthLabel } from "@/lib/format";
+import { formatMoney, formatMoneyByCurrency, netByCurrency, monthLabel } from "@/lib/format";
 import { requireUser, accessibleApartmentIds } from "@/lib/auth";
 
 export default async function DashboardPage() {
@@ -58,16 +58,8 @@ export default async function DashboardPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {owners.map((owner) => {
-            const collected = owner.apartments.reduce(
-              (sum, apt) =>
-                sum + apt.payments.reduce((s, p) => s + p.amount, 0),
-              0
-            );
-            const expenses = owner.expenses.reduce(
-              (sum, e) => sum + e.amount,
-              0
-            );
-            const net = collected - expenses;
+            const payments = owner.apartments.flatMap((apt) => apt.payments);
+            const netGroups = netByCurrency(payments, owner.expenses);
             return (
               <div
                 key={owner.id}
@@ -82,17 +74,27 @@ export default async function DashboardPage() {
                 <dl className="mt-3 space-y-1 text-sm">
                   <div className="flex justify-between">
                     <dt className="text-slate-500">Cobrado</dt>
-                    <dd>{formatMoney(collected)}</dd>
+                    <dd>{formatMoneyByCurrency(payments)}</dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-slate-500">Gastos por su cuenta</dt>
                     <dd className="text-rose-600">
-                      {expenses > 0 ? `- ${formatMoney(expenses)}` : formatMoney(0)}
+                      {owner.expenses.length > 0
+                        ? `- ${formatMoneyByCurrency(owner.expenses)}`
+                        : formatMoney(0)}
                     </dd>
                   </div>
                   <div className="flex justify-between border-t border-slate-100 pt-1 font-semibold">
                     <dt>Neto a pagarle</dt>
-                    <dd>{formatMoney(net)}</dd>
+                    <dd className="text-right">
+                      {netGroups.length === 0
+                        ? formatMoney(0)
+                        : netGroups.map((g) => (
+                            <span key={g.currency} className="block">
+                              {formatMoney(g.amount, g.currency)}
+                            </span>
+                          ))}
+                    </dd>
                   </div>
                 </dl>
                 <Link
