@@ -1,4 +1,21 @@
-export default function Logo({ className }: { className?: string }) {
+import { getBusinessSettings } from "@/lib/business";
+
+export default async function Logo({ className }: { className?: string }) {
+  const settings = await getBusinessSettings();
+
+  if (settings.logoDataUrl) {
+    return (
+      <span className={`inline-flex items-center ${className ?? ""}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={settings.logoDataUrl}
+          alt={settings.businessName ?? "Logo"}
+          className="h-8 w-auto shrink-0"
+        />
+      </span>
+    );
+  }
+
   return (
     <span className={`inline-flex items-center gap-2 ${className ?? ""}`}>
       <svg viewBox="0 0 100 100" className="h-7 w-7 shrink-0" aria-hidden="true">

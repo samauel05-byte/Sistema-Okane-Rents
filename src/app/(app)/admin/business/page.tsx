@@ -8,7 +8,9 @@ export default async function BusinessAdminPage() {
     <div className="space-y-6">
       <p className="text-sm text-slate-500">
         Estos datos aparecen como emisor en cada recibo y factura que
-        generes desde la sección de Facturas.
+        generes desde la sección de Facturas. El logo también se muestra en
+        la barra superior de la web, y el favicon en la pestaña del
+        navegador.
       </p>
 
       <form
@@ -16,9 +18,9 @@ export default async function BusinessAdminPage() {
         encType="multipart/form-data"
         className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-2"
       >
-        <div className="sm:col-span-2">
+        <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">
-            Logo (aparece al imprimir facturas y recibos)
+            Logo (facturas y barra superior)
           </label>
           {settings.logoDataUrl && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -39,6 +41,37 @@ export default async function BusinessAdminPage() {
               <input type="checkbox" name="removeLogo" />
               Quitar el logo actual
             </label>
+          )}
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700">
+            Favicon (ícono de la pestaña del navegador)
+          </label>
+          {settings.faviconDataUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={settings.faviconDataUrl}
+              alt="Favicon actual"
+              className="mb-2 h-14 w-14 rounded border border-slate-200 bg-white p-1"
+            />
+          )}
+          <input
+            name="favicon"
+            type="file"
+            accept="image/*"
+            className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-slate-900 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-slate-700"
+          />
+          {settings.faviconDataUrl && (
+            <label className="mt-2 flex items-center gap-2 text-sm text-slate-600">
+              <input type="checkbox" name="removeFavicon" />
+              Quitar el favicon actual
+            </label>
+          )}
+          {!settings.faviconDataUrl && settings.logoDataUrl && (
+            <p className="mt-2 text-xs text-slate-400">
+              Si no subes uno, se usa el logo de arriba como favicon.
+            </p>
           )}
         </div>
 

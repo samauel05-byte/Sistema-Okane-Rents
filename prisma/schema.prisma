@@ -151,6 +151,7 @@ model BusinessSettings {
   phone             String?
   email             String?
   logoDataUrl       String?
+  faviconDataUrl    String?
   nextReceiptNumber Int      @default(1)
   nextInvoiceNumber Int      @default(1)
   updatedAt         DateTime @updatedAt
