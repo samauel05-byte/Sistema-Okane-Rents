@@ -180,7 +180,7 @@ export default async function DashboardPage() {
 
           <div className="rounded-lg border border-slate-800 bg-slate-900 p-4 shadow-sm">
             <h2 className="mb-3 font-semibold">
-              Cobrado vs. pendiente por cobrar — últimos 6 meses (RD$)
+              Cobrado vs. Pendiente por cobrar — últimos 6 meses (RD$)
             </h2>
             <MonthlyBarChart data={chartData} />
           </div>
