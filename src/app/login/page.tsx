@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
@@ -25,6 +26,20 @@ export default async function LoginPage() {
       <div className="rounded-lg border border-slate-800 bg-slate-900 p-6">
         {isFirstRun ? <SetupForm /> : <LoginForm />}
       </div>
+      <p className="mt-4 text-center text-xs text-slate-500">
+        Al continuar, aceptas los{" "}
+        <Link href="/terms" className="underline hover:text-slate-300">
+          Términos de Servicio
+        </Link>{" "}
+        y la{" "}
+        <Link href="/privacy" className="underline hover:text-slate-300">
+          Política de Privacidad
+        </Link>{" "}
+        de Okane Rents, y a recibir correos periódicos con actualizaciones.
+      </p>
+      <p className="mt-2 text-center text-xs text-slate-600">
+        © Copyright {new Date().getFullYear()} Okane Rents - Todos los Derechos Reservados
+      </p>
     </div>
   );
 }
