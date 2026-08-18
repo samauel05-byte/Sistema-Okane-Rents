@@ -149,6 +149,41 @@ export default async function OwnerDetailPage({
                           placeholder="RNC/Cédula (opcional)"
                           className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
                         />
+                        <label className="text-xs text-slate-400">
+                          Inicio de contrato
+                          <input
+                            name="moveInDate"
+                            type="date"
+                            defaultValue={new Date().toISOString().slice(0, 10)}
+                            className="mt-1 w-full rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                          />
+                        </label>
+                        <input
+                          name="paymentDueDay"
+                          type="number"
+                          min="1"
+                          max="31"
+                          defaultValue={apt.paymentDueDay ?? ""}
+                          placeholder="Día de pago (1-31)"
+                          className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                        />
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            name="contractYears"
+                            type="number"
+                            min="0"
+                            placeholder="Años"
+                            className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                          />
+                          <input
+                            name="contractMonths"
+                            type="number"
+                            min="0"
+                            max="11"
+                            placeholder="Meses"
+                            className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                          />
+                        </div>
                         <button
                           type="submit"
                           className="rounded-md bg-[#D2491C] px-2 py-1.5 text-xs font-medium text-white hover:bg-[#b83d17]"
