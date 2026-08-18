@@ -1,6 +1,12 @@
 import { getBusinessSettings } from "@/lib/business";
 
-export default async function Logo({ className }: { className?: string }) {
+export default async function Logo({
+  className,
+  dark,
+}: {
+  className?: string;
+  dark?: boolean;
+}) {
   const settings = await getBusinessSettings();
 
   if (settings.logoDataUrl) {
@@ -38,7 +44,9 @@ export default async function Logo({ className }: { className?: string }) {
           strokeLinejoin="round"
         />
       </svg>
-      <span className="text-lg font-semibold tracking-tight text-slate-900">
+      <span
+        className={`text-lg font-semibold tracking-tight ${dark ? "text-white" : "text-slate-900"}`}
+      >
         Okane <span className="text-[#D2491C]">Rents</span>
       </span>
     </span>

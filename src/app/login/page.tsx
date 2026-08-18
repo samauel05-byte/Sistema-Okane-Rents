@@ -15,14 +15,14 @@ export default async function LoginPage() {
   return (
     <div className="mx-auto flex min-h-[85vh] w-full max-w-sm flex-1 flex-col justify-center px-4">
       <div className="mb-6 flex flex-col items-center text-center">
-        <Logo />
-        <p className="mt-2 text-sm text-slate-500">
+        <Logo dark />
+        <p className="mt-2 text-sm text-slate-400">
           {isFirstRun
             ? "Primera vez aquí — crea la cuenta de administrador"
             : "Inicia sesión para continuar"}
         </p>
       </div>
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
+      <div className="rounded-lg border border-slate-800 bg-slate-900 p-6">
         {isFirstRun ? <SetupForm /> : <LoginForm />}
       </div>
     </div>

@@ -56,7 +56,7 @@ function lateFeePercent(formData: FormData) {
 function requireGlobalScope(user: CurrentUser) {
   if (!user.role.scopeAllApartments) {
     throw new Error(
-      "Tu acceso está limitado a apartamentos específicos; no puedes crear dueños ni apartamentos nuevos."
+      "Tu acceso está limitado a apartamentos específicos; no puedes crear propietarios ni apartamentos nuevos."
     );
   }
 }
@@ -303,7 +303,7 @@ async function requireOwnerAccess(user: CurrentUser, ownerId: string) {
     where: { ownerId, id: { in: user.apartmentIds } },
   });
   if (count === 0) {
-    throw new Error("No tienes acceso a ningún apartamento de este dueño.");
+    throw new Error("No tienes acceso a ningún apartamento de este propietario.");
   }
 }
 
@@ -394,7 +394,6 @@ export async function createInvoice(formData: FormData) {
   const periodMonth = str(formData, "periodMonth") ? num(formData, "periodMonth") : null;
   const periodYear = str(formData, "periodYear") ? num(formData, "periodYear") : null;
   const clientRncInput = str(formData, "clientRnc") || null;
-  const applyItbis = str(formData, "applyItbis") === "on";
 
   if (type === "TENANT") {
     const apartmentId = str(formData, "apartmentId");
@@ -418,7 +417,6 @@ export async function createInvoice(formData: FormData) {
         concept,
         amount,
         currency: apartment.currency,
-        applyItbis,
         clientName: tenant.name,
         clientRnc: clientRncInput ?? tenant.rnc,
         notes,
@@ -453,7 +451,6 @@ export async function createInvoice(formData: FormData) {
         concept,
         amount,
         currency: currency(formData, "currency"),
-        applyItbis,
         clientName: owner.name,
         clientRnc: clientRncInput ?? owner.rnc,
         notes,

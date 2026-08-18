@@ -39,7 +39,7 @@ export default function PaymentForm({
           setApartmentId(e.target.value);
           setAmount(apt ? String(apt.rentAmount) : "");
         }}
-        className="w-full min-w-0 rounded-md border border-slate-300 px-3 py-2 text-sm sm:col-span-2"
+        className="w-full min-w-0 rounded-md border border-slate-700 px-3 py-2 text-sm sm:col-span-2"
       >
         <option value="">Selecciona apartamento / inquilino</option>
         {apartments.map((apt) => (
@@ -62,10 +62,10 @@ export default function PaymentForm({
           required
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          className="min-w-0 flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm"
+          className="min-w-0 flex-1 rounded-md border border-slate-700 px-3 py-2 text-sm"
         />
         {selected && (
-          <span className="shrink-0 text-xs text-slate-500">
+          <span className="shrink-0 text-xs text-slate-400">
             {CURRENCY_LABELS[selected.currency as Currency]?.split(" ")[0] ?? selected.currency}
           </span>
         )}
@@ -74,7 +74,7 @@ export default function PaymentForm({
       <select
         name="periodMonth"
         defaultValue={now.getMonth() + 1}
-        className="w-full min-w-0 rounded-md border border-slate-300 px-3 py-2 text-sm"
+        className="w-full min-w-0 rounded-md border border-slate-700 px-3 py-2 text-sm"
       >
         {MONTH_NAMES.map((m, i) => (
           <option key={m} value={i + 1}>
@@ -86,30 +86,30 @@ export default function PaymentForm({
         name="periodYear"
         type="number"
         defaultValue={now.getFullYear()}
-        className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+        className="rounded-md border border-slate-700 px-3 py-2 text-sm"
       />
       <input
         name="paidOn"
         type="date"
         defaultValue={now.toISOString().slice(0, 10)}
-        className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+        className="rounded-md border border-slate-700 px-3 py-2 text-sm"
       />
 
       <input
         name="method"
         placeholder="Método (efectivo, transferencia...)"
-        className="rounded-md border border-slate-300 px-3 py-2 text-sm sm:col-span-2"
+        className="rounded-md border border-slate-700 px-3 py-2 text-sm sm:col-span-2"
       />
       <input
         name="notes"
         placeholder="Notas (opcional)"
-        className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+        className="rounded-md border border-slate-700 px-3 py-2 text-sm"
       />
 
       <button
         type="submit"
         disabled={!selected?.tenantId}
-        className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-3"
+        className="rounded-md bg-[#D2491C] px-3 py-2 text-sm font-medium text-white hover:bg-[#b83d17] disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-3"
       >
         Registrar cobro
       </button>

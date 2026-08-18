@@ -81,10 +81,3 @@ export function formatDate(date: Date | string) {
 export function monthLabel(month: number, year: number) {
   return `${MONTH_NAMES[month - 1]} ${year}`;
 }
-
-// ITBIS: Dominican Republic's VAT, standard rate.
-export const ITBIS_RATE = 0.18;
-
-export function itbisAmount(subtotal: number) {
-  return subtotal * ITBIS_RATE;
-}

@@ -2,6 +2,16 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { logout } from "@/app/login/actions";
 import Logo from "@/app/Logo";
+import SidebarNav from "./SidebarNav";
+import {
+  IconGrid,
+  IconUsers,
+  IconUserCheck,
+  IconCreditCard,
+  IconReceipt,
+  IconFileText,
+  IconSettings,
+} from "@/components/icons";
 
 export default async function AppLayout({
   children,
@@ -10,45 +20,49 @@ export default async function AppLayout({
 }) {
   const user = await requireUser();
 
-  const navItems = [
-    { href: "/", label: "Inicio" },
-    { href: "/owners", label: "Dueños" },
-    { href: "/tenants", label: "Inquilinos" },
-    { href: "/payments", label: "Cobros" },
-    { href: "/expenses", label: "Gastos" },
-    { href: "/invoices", label: "Facturas" },
+  const navGroups = [
+    {
+      title: "Principal",
+      items: [{ href: "/", label: "Inicio", icon: IconGrid }],
+    },
+    {
+      title: "Gestión",
+      items: [
+        { href: "/owners", label: "Propietarios", icon: IconUsers },
+        { href: "/tenants", label: "Inquilinos", icon: IconUserCheck },
+        { href: "/payments", label: "Cobros", icon: IconCreditCard },
+        { href: "/expenses", label: "Eventualidades", icon: IconReceipt },
+        { href: "/invoices", label: "Facturas", icon: IconFileText },
+      ],
+    },
     ...(user.role.manageUsers
-      ? [{ href: "/admin/users", label: "Usuarios" }]
+      ? [
+          {
+            title: "Administración",
+            items: [{ href: "/admin/users", label: "Usuarios", icon: IconSettings }],
+          },
+        ]
       : []),
   ];
+  const flatNavItems = navGroups.flatMap((g) => g.items);
 
   return (
     <div className="flex min-h-screen flex-col sm:flex-row">
-      <aside className="hidden shrink-0 flex-col border-r border-slate-200 bg-white sm:flex sm:w-56 print:hidden">
-        <div className="border-b border-slate-100 px-4 py-4">
+      <aside className="hidden shrink-0 flex-col bg-slate-900 sm:flex sm:w-60 print:hidden">
+        <div className="border-b border-white/10 px-4 py-4">
           <Link href="/">
-            <Logo />
+            <Logo dark />
           </Link>
         </div>
-        <nav className="flex flex-1 flex-col gap-1 p-3 text-sm font-medium text-slate-600">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded px-3 py-2 hover:bg-slate-100 hover:text-slate-900"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="border-t border-slate-100 p-4 text-sm text-slate-600">
-          <p className="mb-2">
-            {user.name} · <span className="text-slate-400">{user.role.name}</span>
+        <SidebarNav groups={navGroups} />
+        <div className="border-t border-white/10 p-4 text-sm text-slate-300">
+          <p className="mb-2 truncate">
+            {user.name} · <span className="text-slate-500">{user.role.name}</span>
           </p>
           <form action={logout}>
             <button
               type="submit"
-              className="w-full rounded px-2 py-1.5 text-left font-medium hover:bg-slate-100 hover:text-slate-900"
+              className="w-full rounded px-2 py-1.5 text-left font-medium hover:bg-slate-800 hover:text-white"
             >
               Salir
             </button>
@@ -57,29 +71,29 @@ export default async function AppLayout({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="border-b border-slate-200 bg-white sm:hidden print:hidden">
+        <header className="border-b border-slate-800 bg-slate-900 sm:hidden print:hidden">
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
             <Link href="/">
-              <Logo />
+              <Logo dark />
             </Link>
-            <div className="flex items-center gap-2 text-sm text-slate-600">
+            <div className="flex items-center gap-2 text-sm text-slate-300">
               <span>{user.name}</span>
               <form action={logout}>
                 <button
                   type="submit"
-                  className="rounded px-2 py-1 font-medium hover:bg-slate-100 hover:text-slate-900"
+                  className="rounded px-2 py-1 font-medium hover:bg-slate-800 hover:text-white"
                 >
                   Salir
                 </button>
               </form>
             </div>
           </div>
-          <nav className="-mx-2 flex flex-wrap gap-1 border-t border-slate-100 px-4 py-2 text-sm font-medium text-slate-600">
-            {navItems.map((item) => (
+          <nav className="-mx-2 flex flex-wrap gap-1 border-t border-slate-800 px-4 py-2 text-sm font-medium text-slate-300">
+            {flatNavItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="rounded px-2 py-1 hover:bg-slate-100 hover:text-slate-900"
+                className="rounded px-2 py-1 hover:bg-slate-800 hover:text-white"
               >
                 {item.label}
               </Link>

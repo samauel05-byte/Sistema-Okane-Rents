@@ -21,24 +21,24 @@ export default async function UsersAdminPage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-lg border border-slate-200 bg-white">
+      <div className="rounded-lg border border-slate-800 bg-slate-900">
         {users.length === 0 ? (
-          <p className="p-4 text-sm text-slate-500">No hay usuarios todavía.</p>
+          <p className="p-4 text-sm text-slate-400">No hay usuarios todavía.</p>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-slate-800">
             {users.map((u) => (
               <li key={u.id} className="flex flex-wrap items-center justify-between gap-2 p-4">
                 <div>
                   <p className="font-medium">
                     {u.name}{" "}
-                    <span className="font-normal text-slate-400">@{u.username}</span>
+                    <span className="font-normal text-slate-500">@{u.username}</span>
                     {!u.active && (
-                      <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
+                      <span className="ml-2 rounded bg-slate-800 px-1.5 py-0.5 text-xs text-slate-400">
                         Inactivo
                       </span>
                     )}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-400">
                     {u.role.name}
                     {!u.role.scopeAllApartments &&
                       ` · ${u.apartmentAccess.length} apartamento(s) asignado(s)`}
@@ -47,7 +47,7 @@ export default async function UsersAdminPage() {
                 <div className="flex items-center gap-3">
                   <Link
                     href={`/admin/users/${u.id}`}
-                    className="text-sm font-medium text-slate-600 hover:text-slate-900"
+                    className="text-sm font-medium text-slate-300 hover:text-slate-50"
                   >
                     Editar
                   </Link>
@@ -57,7 +57,7 @@ export default async function UsersAdminPage() {
                       <input type="hidden" name="active" value={(!u.active).toString()} />
                       <button
                         type="submit"
-                        className="text-sm font-medium text-slate-600 hover:text-slate-900"
+                        className="text-sm font-medium text-slate-300 hover:text-slate-50"
                       >
                         {u.active ? "Desactivar" : "Activar"}
                       </button>
@@ -70,10 +70,10 @@ export default async function UsersAdminPage() {
         )}
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
+      <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
         <h2 className="mb-3 font-semibold">Crear usuario</h2>
         {roles.length === 0 ? (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-400">
             Primero crea un rol en la pestaña{" "}
             <Link href="/admin/roles" className="underline">
               Roles
@@ -86,13 +86,13 @@ export default async function UsersAdminPage() {
               name="name"
               placeholder="Nombre completo"
               required
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-md border border-slate-700 px-3 py-2 text-sm"
             />
             <input
               name="username"
               placeholder="Usuario"
               required
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-md border border-slate-700 px-3 py-2 text-sm"
             />
             <input
               name="password"
@@ -100,7 +100,7 @@ export default async function UsersAdminPage() {
               placeholder="Contraseña (mínimo 6 caracteres)"
               required
               minLength={6}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm sm:col-span-2"
+              className="rounded-md border border-slate-700 px-3 py-2 text-sm sm:col-span-2"
             />
             <div className="grid gap-3 sm:col-span-2">
               <UserAccessFields
@@ -114,7 +114,7 @@ export default async function UsersAdminPage() {
             </div>
             <button
               type="submit"
-              className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700 sm:col-span-2"
+              className="rounded-md bg-[#D2491C] px-3 py-2 text-sm font-medium text-white hover:bg-[#b83d17] sm:col-span-2"
             >
               Crear usuario
             </button>

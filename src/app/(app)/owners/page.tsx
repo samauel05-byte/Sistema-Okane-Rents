@@ -18,23 +18,23 @@ export default async function OwnersPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Dueños</h1>
+      <h1 className="text-2xl font-semibold">Propietarios</h1>
 
-      <div className="rounded-lg border border-slate-200 bg-white">
+      <div className="rounded-lg border border-slate-800 bg-slate-900">
         {owners.length === 0 ? (
-          <p className="p-4 text-sm text-slate-500">No hay dueños todavía.</p>
+          <p className="p-4 text-sm text-slate-400">No hay propietarios todavía.</p>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-slate-800">
             {owners.map((owner) => (
               <li key={owner.id} className="flex items-center justify-between p-4">
                 <div>
                   <Link
                     href={`/owners/${owner.id}`}
-                    className="font-medium text-slate-900 hover:underline"
+                    className="font-medium text-slate-50 hover:underline"
                   >
                     {owner.name}
                   </Link>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-400">
                     {owner.apartments.length} apartamento(s)
                     {owner.email ? ` · ${owner.email}` : ""}
                     {owner.phone ? ` · ${owner.phone}` : ""}
@@ -42,7 +42,7 @@ export default async function OwnersPage() {
                 </div>
                 <Link
                   href={`/owners/${owner.id}`}
-                  className="text-sm font-medium text-slate-600 hover:text-slate-900"
+                  className="text-sm font-medium text-slate-300 hover:text-slate-50"
                 >
                   Administrar →
                 </Link>
@@ -53,36 +53,36 @@ export default async function OwnersPage() {
       </div>
 
       {canCreateOwner && (
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="mb-3 font-semibold">Agregar dueño</h2>
+        <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
+          <h2 className="mb-3 font-semibold">Agregar propietario</h2>
           <form action={createOwner} className="grid gap-3 sm:grid-cols-3">
             <input
               name="name"
               placeholder="Nombre"
               required
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-md border border-slate-700 px-3 py-2 text-sm"
             />
             <input
               name="email"
               type="email"
               placeholder="Correo (opcional)"
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-md border border-slate-700 px-3 py-2 text-sm"
             />
             <input
               name="phone"
               placeholder="Teléfono (opcional)"
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-md border border-slate-700 px-3 py-2 text-sm"
             />
             <input
               name="rnc"
               placeholder="RNC/Cédula (opcional)"
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-md border border-slate-700 px-3 py-2 text-sm"
             />
             <button
               type="submit"
-              className="sm:col-span-3 rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700"
+              className="sm:col-span-3 rounded-md bg-[#D2491C] px-3 py-2 text-sm font-medium text-white hover:bg-[#b83d17]"
             >
-              Guardar dueño
+              Guardar propietario
             </button>
           </form>
         </div>

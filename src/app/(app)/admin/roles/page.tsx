@@ -10,7 +10,7 @@ export default async function RolesAdminPage() {
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-slate-400">
         Los roles definen qué puede hacer cada usuario y si ve todos los
         apartamentos o solo los que se le asignen. Puedes crear tantos
         perfiles como necesites.
@@ -20,27 +20,27 @@ export default async function RolesAdminPage() {
         {roles.map((role) => (
           <details
             key={role.id}
-            className="rounded-lg border border-slate-200 bg-white"
+            className="rounded-lg border border-slate-800 bg-slate-900"
           >
             <summary className="flex cursor-pointer items-center justify-between p-4">
               <div>
                 <span className="font-medium">{role.name}</span>
-                <span className="ml-2 text-xs text-slate-400">
+                <span className="ml-2 text-xs text-slate-500">
                   {role._count.users} usuario(s)
                 </span>
                 {role.description && (
-                  <p className="text-xs text-slate-500">{role.description}</p>
+                  <p className="text-xs text-slate-400">{role.description}</p>
                 )}
               </div>
             </summary>
-            <div className="border-t border-slate-100 p-4">
+            <div className="border-t border-slate-800 p-4">
               <RoleForm role={role} action={updateRole} submitLabel="Guardar cambios" />
               {role._count.users === 0 && (
                 <form action={deleteRole} className="mt-3">
                   <input type="hidden" name="id" value={role.id} />
                   <button
                     type="submit"
-                    className="text-sm font-medium text-rose-600 hover:underline"
+                    className="text-sm font-medium text-rose-400 hover:underline"
                   >
                     Eliminar rol
                   </button>
@@ -51,7 +51,7 @@ export default async function RolesAdminPage() {
         ))}
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
+      <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
         <h2 className="mb-3 font-semibold">Crear rol</h2>
         <RoleForm action={createRole} submitLabel="Crear rol" />
       </div>

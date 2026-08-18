@@ -85,7 +85,7 @@ export async function setupAdmin(
       data: {
         name: "Gestor",
         description:
-          "Registra cobros y gastos solo de los apartamentos que se le asignen.",
+          "Registra cobros y eventualidades solo de los apartamentos que se le asignen.",
         scopeAllApartments: false,
         manageUsers: false,
         manageOwners: false,
