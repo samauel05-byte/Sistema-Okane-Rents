@@ -43,6 +43,14 @@ function paymentDueDay(formData: FormData) {
   return day >= 1 && day <= 31 ? day : null;
 }
 
+const MAX_LATE_FEE_PERCENT = 10;
+
+function lateFeePercent(formData: FormData) {
+  const n = optionalNum(formData, "lateFeePercent");
+  if (n === null) return null;
+  return Math.min(MAX_LATE_FEE_PERCENT, Math.max(0, n));
+}
+
 /** Creating brand-new owners/apartments is out of the "assigned apartments"
  * model, so it's reserved for roles with unrestricted (global) scope. */
 function requireGlobalScope(user: CurrentUser) {
@@ -100,7 +108,7 @@ export async function createApartment(formData: FormData) {
       rentAmount,
       currency: currency(formData, "currency"),
       paymentDueDay: paymentDueDay(formData),
-      lateFeeAmount: optionalNum(formData, "lateFeeAmount"),
+      lateFeePercent: lateFeePercent(formData),
     },
   });
   revalidatePath(`/owners/${ownerId}`);
@@ -130,7 +138,7 @@ export async function updateApartmentTerms(formData: FormData) {
     where: { id },
     data: {
       paymentDueDay: paymentDueDay(formData),
-      lateFeeAmount: optionalNum(formData, "lateFeeAmount"),
+      lateFeePercent: lateFeePercent(formData),
     },
   });
   revalidatePath("/tenants");

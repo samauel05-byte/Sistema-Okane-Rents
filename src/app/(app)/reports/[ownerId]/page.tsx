@@ -58,7 +58,15 @@ export default async function OwnerReportPage({
   if (ids && owner.apartments.length === 0) notFound();
 
   const allPayments = owner.apartments.flatMap((apt) => apt.payments);
-  const netGroups = netByCurrency(allPayments, owner.expenses);
+
+  // A late fee (% of rent) applies to apartments left unpaid this period.
+  const lateFees = owner.apartments.flatMap((apt) => {
+    const collected = apt.payments.reduce((s, p) => s + p.amount, 0);
+    if (collected > 0 || !apt.lateFeePercent) return [];
+    return [{ amount: (apt.rentAmount * apt.lateFeePercent) / 100, currency: apt.currency }];
+  });
+
+  const netGroups = netByCurrency([...allPayments, ...lateFees], owner.expenses);
 
   const prev = shiftMonth(periodMonth, periodYear, -1);
   const next = shiftMonth(periodMonth, periodYear, 1);
@@ -119,12 +127,17 @@ export default async function OwnerReportPage({
                 <th className="py-2">Inquilino</th>
                 <th className="py-2 text-right">Renta mensual</th>
                 <th className="py-2 text-right">Cobrado en el mes</th>
+                <th className="py-2 text-right">Mora</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {owner.apartments.map((apt) => {
                 const collected = apt.payments.reduce((s, p) => s + p.amount, 0);
                 const tenant = apt.tenants[0];
+                const lateFee =
+                  collected === 0 && apt.lateFeePercent
+                    ? (apt.rentAmount * apt.lateFeePercent) / 100
+                    : 0;
                 return (
                   <tr key={apt.id}>
                     <td className="py-2">{apt.label}</td>
@@ -139,6 +152,11 @@ export default async function OwnerReportPage({
                         <span className="text-rose-500">Sin cobrar</span>
                       )}
                     </td>
+                    <td className="py-2 text-right text-rose-600">
+                      {lateFee > 0
+                        ? `+${formatMoney(lateFee, apt.currency)} (${apt.lateFeePercent}%)`
+                        : "—"}
+                    </td>
                   </tr>
                 );
               })}
@@ -149,6 +167,9 @@ export default async function OwnerReportPage({
                   Total cobrado
                 </td>
                 <td className="py-2 text-right">{formatMoneyByCurrency(allPayments)}</td>
+                <td className="py-2 text-right text-rose-600">
+                  {lateFees.length > 0 ? `+${formatMoneyByCurrency(lateFees)}` : "—"}
+                </td>
               </tr>
             </tfoot>
           </table>
