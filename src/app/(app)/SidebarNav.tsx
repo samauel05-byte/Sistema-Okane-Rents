@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ComponentType } from "react";
+import type { ReactNode } from "react";
 
 type NavItem = {
   href: string;
   label: string;
-  icon: ComponentType<{ className?: string }>;
+  icon: ReactNode;
 };
 
 type NavGroup = { title: string; items: NavItem[] };
@@ -30,7 +30,6 @@ export default function SidebarNav({ groups }: { groups: NavGroup[] }) {
           <div className="flex flex-col gap-0.5">
             {group.items.map((item) => {
               const active = isActive(pathname, item.href);
-              const Icon = item.icon;
               return (
                 <Link
                   key={item.href}
@@ -41,7 +40,7 @@ export default function SidebarNav({ groups }: { groups: NavGroup[] }) {
                       : "text-slate-300 hover:bg-slate-800 hover:text-white"
                   }`}
                 >
-                  <Icon className="h-[18px] w-[18px] shrink-0" />
+                  {item.icon}
                   {item.label}
                 </Link>
               );

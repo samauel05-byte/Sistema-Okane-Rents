@@ -20,26 +20,29 @@ export default async function AppLayout({
 }) {
   const user = await requireUser();
 
+  const iconClass = "h-[18px] w-[18px] shrink-0";
   const navGroups = [
     {
       title: "Principal",
-      items: [{ href: "/", label: "Inicio", icon: IconGrid }],
+      items: [{ href: "/", label: "Inicio", icon: <IconGrid className={iconClass} /> }],
     },
     {
       title: "Gestión",
       items: [
-        { href: "/owners", label: "Propietarios", icon: IconUsers },
-        { href: "/tenants", label: "Inquilinos", icon: IconUserCheck },
-        { href: "/payments", label: "Cobros", icon: IconCreditCard },
-        { href: "/expenses", label: "Eventualidades", icon: IconReceipt },
-        { href: "/invoices", label: "Facturas", icon: IconFileText },
+        { href: "/owners", label: "Propietarios", icon: <IconUsers className={iconClass} /> },
+        { href: "/tenants", label: "Inquilinos", icon: <IconUserCheck className={iconClass} /> },
+        { href: "/payments", label: "Cobros", icon: <IconCreditCard className={iconClass} /> },
+        { href: "/expenses", label: "Eventualidades", icon: <IconReceipt className={iconClass} /> },
+        { href: "/invoices", label: "Facturas", icon: <IconFileText className={iconClass} /> },
       ],
     },
     ...(user.role.manageUsers
       ? [
           {
             title: "Administración",
-            items: [{ href: "/admin/users", label: "Usuarios", icon: IconSettings }],
+            items: [
+              { href: "/admin/users", label: "Usuarios", icon: <IconSettings className={iconClass} /> },
+            ],
           },
         ]
       : []),
