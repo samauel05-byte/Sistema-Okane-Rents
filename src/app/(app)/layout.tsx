@@ -13,6 +13,7 @@ export default async function AppLayout({
   const navItems = [
     { href: "/", label: "Inicio" },
     { href: "/owners", label: "Dueños" },
+    { href: "/tenants", label: "Inquilinos" },
     { href: "/payments", label: "Cobros" },
     { href: "/expenses", label: "Gastos" },
     { href: "/invoices", label: "Facturas" },

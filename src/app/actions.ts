@@ -106,10 +106,12 @@ export async function createTenant(formData: FormData) {
   requirePermission(user, "manageApartments");
 
   const apartmentId = str(formData, "apartmentId");
-  const ownerId = str(formData, "ownerId");
   const name = str(formData, "name");
   if (!apartmentId || !name) return;
   requireApartmentAccess(user, apartmentId);
+
+  const apartment = await prisma.apartment.findUnique({ where: { id: apartmentId } });
+  if (!apartment) return;
 
   // Only one active tenant per apartment at a time.
   await prisma.tenant.updateMany({
@@ -127,7 +129,53 @@ export async function createTenant(formData: FormData) {
       moveInDate: new Date(),
     },
   });
-  revalidatePath(`/owners/${ownerId}`);
+  revalidatePath(`/owners/${apartment.ownerId}`);
+  revalidatePath("/tenants");
+}
+
+export async function updateTenant(formData: FormData) {
+  const user = await requireUser();
+  requirePermission(user, "manageApartments");
+
+  const id = str(formData, "id");
+  const name = str(formData, "name");
+  if (!id || !name) return;
+
+  const tenant = await prisma.tenant.findUnique({
+    where: { id },
+    include: { apartment: true },
+  });
+  if (!tenant) return;
+  requireApartmentAccess(user, tenant.apartmentId);
+
+  await prisma.tenant.update({
+    where: { id },
+    data: {
+      name,
+      email: str(formData, "email") || null,
+      phone: str(formData, "phone") || null,
+      rnc: str(formData, "rnc") || null,
+    },
+  });
+  revalidatePath("/tenants");
+  revalidatePath(`/owners/${tenant.apartment.ownerId}`);
+}
+
+export async function deactivateTenant(formData: FormData) {
+  const user = await requireUser();
+  requirePermission(user, "manageApartments");
+
+  const id = str(formData, "id");
+  const tenant = await prisma.tenant.findUnique({
+    where: { id },
+    include: { apartment: true },
+  });
+  if (!tenant) return;
+  requireApartmentAccess(user, tenant.apartmentId);
+
+  await prisma.tenant.update({ where: { id }, data: { active: false } });
+  revalidatePath("/tenants");
+  revalidatePath(`/owners/${tenant.apartment.ownerId}`);
 }
 
 export async function createPayment(formData: FormData) {
