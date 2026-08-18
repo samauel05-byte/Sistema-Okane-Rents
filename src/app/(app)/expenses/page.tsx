@@ -1,5 +1,13 @@
 import { prisma } from "@/lib/prisma";
-import { MONTH_NAMES, formatDate, formatMoney, monthLabel } from "@/lib/format";
+import {
+  MONTH_NAMES,
+  formatDate,
+  formatMoney,
+  monthLabel,
+  CURRENCIES,
+  CURRENCY_LABELS,
+  DEFAULT_CURRENCY,
+} from "@/lib/format";
 import { createExpense, deleteExpense } from "@/app/actions";
 import { requireUser, accessibleApartmentIds } from "@/lib/auth";
 
@@ -78,6 +86,17 @@ export default async function ExpensesPage() {
               required
               className="rounded-md border border-slate-300 px-3 py-2 text-sm"
             />
+            <select
+              name="currency"
+              defaultValue={DEFAULT_CURRENCY}
+              className="w-full min-w-0 rounded-md border border-slate-300 px-3 py-2 text-sm"
+            >
+              {CURRENCIES.map((c) => (
+                <option key={c} value={c}>
+                  {CURRENCY_LABELS[c]}
+                </option>
+              ))}
+            </select>
 
             <input
               name="description"
@@ -154,7 +173,7 @@ export default async function ExpensesPage() {
                     <td className="p-3">{e.description}</td>
                     <td className="p-3">{monthLabel(e.periodMonth, e.periodYear)}</td>
                     <td className="p-3 text-right font-medium text-rose-600">
-                      {formatMoney(e.amount)}
+                      {formatMoney(e.amount, e.currency)}
                     </td>
                     <td className="p-3 text-right">
                       {user.role.manageExpenses && (

@@ -37,6 +37,7 @@ export default async function PaymentsPage() {
               label: apt.label,
               ownerName: apt.owner.name,
               rentAmount: apt.rentAmount,
+              currency: apt.currency,
               tenantId: apt.tenants[0]?.id ?? null,
               tenantName: apt.tenants[0]?.name ?? null,
             }))}
@@ -75,7 +76,7 @@ export default async function PaymentsPage() {
                     <td className="p-3">{monthLabel(p.periodMonth, p.periodYear)}</td>
                     <td className="p-3">{p.method ?? "—"}</td>
                     <td className="p-3 text-right font-medium">
-                      {formatMoney(p.amount)}
+                      {formatMoney(p.amount, p.currency)}
                     </td>
                     <td className="p-3 text-right">
                       {user.role.managePayments && (

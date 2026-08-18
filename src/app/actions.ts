@@ -10,6 +10,12 @@ import {
   type CurrentUser,
 } from "@/lib/auth";
 import { nextInvoiceNumber } from "@/lib/business";
+import { DEFAULT_CURRENCY, isCurrency } from "@/lib/format";
+
+function currency(formData: FormData, key: string) {
+  const v = str(formData, key);
+  return isCurrency(v) ? v : DEFAULT_CURRENCY;
+}
 
 function str(formData: FormData, key: string) {
   const v = formData.get(key);
@@ -77,6 +83,7 @@ export async function createApartment(formData: FormData) {
       label,
       address: str(formData, "address") || null,
       rentAmount,
+      currency: currency(formData, "currency"),
     },
   });
   revalidatePath(`/owners/${ownerId}`);
@@ -137,11 +144,15 @@ export async function createPayment(formData: FormData) {
   }
   requireApartmentAccess(user, apartmentId);
 
+  const apartment = await prisma.apartment.findUnique({ where: { id: apartmentId } });
+  if (!apartment) return;
+
   await prisma.payment.create({
     data: {
       tenantId,
       apartmentId,
       amount,
+      currency: apartment.currency,
       periodMonth,
       periodYear,
       method: str(formData, "method") || null,
@@ -217,6 +228,7 @@ export async function createExpense(formData: FormData) {
       apartmentId,
       description,
       amount,
+      currency: currency(formData, "currency"),
       periodMonth,
       periodYear,
       category: str(formData, "category") || null,
@@ -287,6 +299,7 @@ export async function createInvoice(formData: FormData) {
         issuedOn,
         concept,
         amount,
+        currency: apartment.currency,
         clientName: tenant.name,
         clientRnc: clientRncInput ?? tenant.rnc,
         notes,
@@ -320,6 +333,7 @@ export async function createInvoice(formData: FormData) {
         issuedOn,
         concept,
         amount,
+        currency: currency(formData, "currency"),
         clientName: owner.name,
         clientRnc: clientRncInput ?? owner.rnc,
         notes,

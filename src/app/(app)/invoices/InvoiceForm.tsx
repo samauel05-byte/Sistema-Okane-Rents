@@ -2,13 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { createInvoice } from "@/app/actions";
-import { MONTH_NAMES } from "@/lib/format";
+import { MONTH_NAMES, CURRENCIES, CURRENCY_LABELS, DEFAULT_CURRENCY } from "@/lib/format";
 
 type ApartmentOption = {
   id: string;
   label: string;
   ownerName: string;
   rentAmount: number;
+  currency: string;
   tenantId: string | null;
   tenantName: string | null;
 };
@@ -80,7 +81,7 @@ export default function InvoiceForm({
           <option value="">Selecciona apartamento / inquilino</option>
           {apartments.map((apt) => (
             <option key={apt.id} value={apt.id} disabled={!apt.tenantId}>
-              {apt.ownerName} — {apt.label}
+              {apt.ownerName} — {apt.label} ({apt.currency})
               {apt.tenantName ? ` (${apt.tenantName})` : " (sin inquilino)"}
             </option>
           ))}
@@ -119,17 +120,36 @@ export default function InvoiceForm({
         className="rounded-md border border-slate-300 px-3 py-2 text-sm sm:col-span-3"
       />
 
-      <input
-        name="amount"
-        type="number"
-        step="0.01"
-        min="0"
-        placeholder="Monto"
-        required
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-        className="rounded-md border border-slate-300 px-3 py-2 text-sm"
-      />
+      <div className="flex items-center gap-2">
+        <input
+          name="amount"
+          type="number"
+          step="0.01"
+          min="0"
+          placeholder="Monto"
+          required
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          className="min-w-0 flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm"
+        />
+        {type === "TENANT" ? (
+          <span className="shrink-0 text-xs text-slate-500">
+            {selectedApartment?.currency ?? DEFAULT_CURRENCY}
+          </span>
+        ) : (
+          <select
+            name="currency"
+            defaultValue={DEFAULT_CURRENCY}
+            className="w-full min-w-0 rounded-md border border-slate-300 px-3 py-2 text-sm"
+          >
+            {CURRENCIES.map((c) => (
+              <option key={c} value={c}>
+                {CURRENCY_LABELS[c]}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
       <select
         name="periodMonth"
         defaultValue={now.getMonth() + 1}

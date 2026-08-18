@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { formatDate, formatMoney, monthLabel } from "@/lib/format";
+import {
+  formatDate,
+  formatMoney,
+  formatMoneyByCurrency,
+  netByCurrency,
+  monthLabel,
+} from "@/lib/format";
 import { requireUser, accessibleApartmentIds } from "@/lib/auth";
 import PrintButton from "@/components/PrintButton";
 
@@ -51,12 +57,8 @@ export default async function OwnerReportPage({
   if (!owner) notFound();
   if (ids && owner.apartments.length === 0) notFound();
 
-  const totalCollected = owner.apartments.reduce(
-    (sum, apt) => sum + apt.payments.reduce((s, p) => s + p.amount, 0),
-    0
-  );
-  const totalExpenses = owner.expenses.reduce((sum, e) => sum + e.amount, 0);
-  const netToOwner = totalCollected - totalExpenses;
+  const allPayments = owner.apartments.flatMap((apt) => apt.payments);
+  const netGroups = netByCurrency(allPayments, owner.expenses);
 
   const prev = shiftMonth(periodMonth, periodYear, -1);
   const next = shiftMonth(periodMonth, periodYear, 1);
@@ -127,10 +129,12 @@ export default async function OwnerReportPage({
                   <tr key={apt.id}>
                     <td className="py-2">{apt.label}</td>
                     <td className="py-2">{tenant?.name ?? "— sin asignar —"}</td>
-                    <td className="py-2 text-right">{formatMoney(apt.rentAmount)}</td>
+                    <td className="py-2 text-right">
+                      {formatMoney(apt.rentAmount, apt.currency)}
+                    </td>
                     <td className="py-2 text-right font-medium">
                       {collected > 0 ? (
-                        formatMoney(collected)
+                        formatMoney(collected, apt.currency)
                       ) : (
                         <span className="text-rose-500">Sin cobrar</span>
                       )}
@@ -144,7 +148,7 @@ export default async function OwnerReportPage({
                 <td className="py-2" colSpan={3}>
                   Total cobrado
                 </td>
-                <td className="py-2 text-right">{formatMoney(totalCollected)}</td>
+                <td className="py-2 text-right">{formatMoneyByCurrency(allPayments)}</td>
               </tr>
             </tfoot>
           </table>
@@ -175,7 +179,7 @@ export default async function OwnerReportPage({
                     <td className="py-2">{e.apartment?.label ?? "General"}</td>
                     <td className="py-2">{e.description}</td>
                     <td className="py-2 text-right text-rose-600">
-                      -{formatMoney(e.amount)}
+                      -{formatMoney(e.amount, e.currency)}
                     </td>
                   </tr>
                 ))}
@@ -186,7 +190,7 @@ export default async function OwnerReportPage({
                     Total gastos
                   </td>
                   <td className="py-2 text-right text-rose-600">
-                    -{formatMoney(totalExpenses)}
+                    -{formatMoneyByCurrency(owner.expenses)}
                   </td>
                 </tr>
               </tfoot>
@@ -196,7 +200,15 @@ export default async function OwnerReportPage({
 
         <div className="flex flex-col gap-1 rounded-md bg-slate-900 px-4 py-3 text-white sm:flex-row sm:items-center sm:justify-between sm:gap-0">
           <span className="font-medium">Monto neto a pagarle al dueño</span>
-          <span className="text-lg font-semibold">{formatMoney(netToOwner)}</span>
+          <span className="text-right text-lg font-semibold">
+            {netGroups.length === 0
+              ? formatMoney(0)
+              : netGroups.map((g) => (
+                  <span key={g.currency} className="block">
+                    {formatMoney(g.amount, g.currency)}
+                  </span>
+                ))}
+          </span>
         </div>
       </div>
     </div>
