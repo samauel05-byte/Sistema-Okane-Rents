@@ -56,7 +56,7 @@ export default async function TenantsPage() {
                     return (
                       <option key={apt.id} value={apt.id}>
                         {apt.label}
-                        {current ? ` (reemplaza a ${current.name})` : " (vacante)"}
+                        {current ? ` (reemplaza a ${current.name})` : " (sin inquilino)"}
                       </option>
                     );
                   })}
@@ -139,7 +139,7 @@ export default async function TenantsPage() {
                               </p>
                             </>
                           ) : (
-                            <p className="text-sm text-rose-500">— Vacante —</p>
+                            <p className="text-sm text-slate-500">— Sin asignar —</p>
                           )}
                           <p className="mt-1 text-xs text-slate-400">
                             {apt.paymentDueDay
@@ -237,7 +237,7 @@ export default async function TenantsPage() {
                                 type="submit"
                                 className="font-medium text-rose-500 hover:underline"
                               >
-                                Marcar como vacante
+                                Quitar inquilino
                               </button>
                             </form>
                           )}
