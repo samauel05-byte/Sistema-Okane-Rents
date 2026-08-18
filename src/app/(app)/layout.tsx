@@ -91,13 +91,14 @@ export default async function AppLayout({
               </form>
             </div>
           </div>
-          <nav className="-mx-2 flex flex-wrap gap-1 border-t border-slate-800 px-4 py-2 text-sm font-medium text-slate-300">
+          <nav className="grid grid-cols-2 gap-2 border-t border-slate-800 px-4 py-3 text-sm font-medium text-slate-300">
             {flatNavItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="rounded px-2 py-1 hover:bg-slate-800 hover:text-white"
+                className="flex items-center gap-2 rounded-md px-3 py-2.5 hover:bg-slate-800 hover:text-white"
               >
+                {item.icon}
                 {item.label}
               </Link>
             ))}
