@@ -67,52 +67,37 @@ export default async function DashboardPage() {
   const allExpenses = owners.flatMap((o) => o.expenses);
   const netGroups = netByCurrency(thisMonthPayments, allExpenses);
 
-  const accessibleOwnerIds = owners.map((o) => o.id);
   const chartMonths = lastMonths(6, periodMonth, periodYear);
   const chartMonthFilter = chartMonths.map(({ month, year }) => ({
     periodMonth: month,
     periodYear: year,
   }));
 
-  const [chartPayments, chartExpenses] = await Promise.all([
-    prisma.payment.findMany({
-      where: {
-        currency: DEFAULT_CURRENCY,
-        OR: chartMonthFilter,
-        ...(ids ? { apartmentId: { in: ids } } : {}),
-      },
-      select: { amount: true, periodMonth: true, periodYear: true },
-    }),
-    prisma.expense.findMany({
-      where: {
-        currency: DEFAULT_CURRENCY,
-        AND: [
-          { OR: chartMonthFilter },
-          ...(ids
-            ? [
-                {
-                  OR: [
-                    { apartmentId: { in: ids } },
-                    { apartmentId: null, ownerId: { in: accessibleOwnerIds } },
-                  ],
-                },
-              ]
-            : []),
-        ],
-      },
-      select: { amount: true, periodMonth: true, periodYear: true },
-    }),
-  ]);
+  const chartPayments = await prisma.payment.findMany({
+    where: {
+      currency: DEFAULT_CURRENCY,
+      OR: chartMonthFilter,
+      ...(ids ? { apartmentId: { in: ids } } : {}),
+    },
+    select: { amount: true, periodMonth: true, periodYear: true },
+  });
 
-  const chartData = chartMonths.map(({ month, year }) => ({
-    label: `${MONTH_NAMES[month - 1].slice(0, 3)} ${String(year).slice(2)}`,
-    collected: chartPayments
+  // Expected monthly rent (occupied apartments, DOP only) — used to show
+  // what's still pending to collect each month rather than expenses.
+  const expectedMonthlyRentDOP = apartments
+    .filter((apt) => apt.currency === DEFAULT_CURRENCY && apt.tenants.length > 0)
+    .reduce((s, apt) => s + apt.rentAmount, 0);
+
+  const chartData = chartMonths.map(({ month, year }) => {
+    const collected = chartPayments
       .filter((p) => p.periodMonth === month && p.periodYear === year)
-      .reduce((s, p) => s + p.amount, 0),
-    expenses: chartExpenses
-      .filter((e) => e.periodMonth === month && e.periodYear === year)
-      .reduce((s, e) => s + e.amount, 0),
-  }));
+      .reduce((s, p) => s + p.amount, 0);
+    return {
+      label: `${MONTH_NAMES[month - 1].slice(0, 3)} ${String(year).slice(2)}`,
+      collected,
+      pending: Math.max(0, expectedMonthlyRentDOP - collected),
+    };
+  });
 
   const vacantApartments = apartments.filter((apt) => apt.tenants.length === 0);
 
@@ -121,10 +106,15 @@ export default async function DashboardPage() {
     .map((apt) => {
       const tenant = apt.tenants[0];
       const overdue = monthsOverdue(apt.payments, apt.paymentDueDay, tenant.moveInDate);
-      return { apt, tenant, overdue };
+      const lateFee = apt.lateFeePercent ? (apt.rentAmount * apt.lateFeePercent) / 100 : 0;
+      return { apt, tenant, overdue, lateFee };
     })
     .filter((t) => t.overdue > 2)
     .sort((a, b) => b.overdue - a.overdue);
+
+  const lateFeeTotals = lateTenants
+    .filter((t) => t.lateFee > 0)
+    .map((t) => ({ amount: t.lateFee, currency: t.apt.currency }));
 
   const stats = [
     { label: "Cobrado este mes", value: formatMoneyByCurrency(thisMonthPayments) },
@@ -140,8 +130,13 @@ export default async function DashboardPage() {
           : netGroups.map((g) => formatMoney(g.amount, g.currency)).join(", "),
     },
     { label: "Apartamentos", value: String(apartments.length) },
-    { label: "Vacantes", value: String(vacantApartments.length) },
-    { label: "Inquilinos en mora", value: String(lateTenants.length) },
+    { label: "Disponibles", value: String(vacantApartments.length) },
+    {
+      label: "Inquilinos en mora",
+      value: `${lateTenants.length} · ${
+        lateFeeTotals.length > 0 ? formatMoneyByCurrency(lateFeeTotals) : formatMoney(0)
+      }`,
+    },
   ];
 
   return (
@@ -185,7 +180,7 @@ export default async function DashboardPage() {
 
           <div className="rounded-lg border border-slate-800 bg-slate-900 p-4 shadow-sm">
             <h2 className="mb-3 font-semibold">
-              Cobros vs. eventualidades — últimos 6 meses (RD$)
+              Cobrado vs. pendiente por cobrar — últimos 6 meses (RD$)
             </h2>
             <MonthlyBarChart data={chartData} />
           </div>
@@ -196,13 +191,20 @@ export default async function DashboardPage() {
                 Inquilinos atrasados (más de 2 meses)
               </h2>
               <ul className="space-y-1 text-sm text-rose-300">
-                {lateTenants.map(({ apt, tenant, overdue }) => (
+                {lateTenants.map(({ apt, tenant, overdue, lateFee }) => (
                   <li key={apt.id} className="flex items-center justify-between gap-2">
                     <span>
                       {tenant.name} — {apt.ownerName} · {apt.label}
                     </span>
-                    <span className="shrink-0 rounded bg-rose-900 px-1.5 py-0.5 text-xs font-semibold">
-                      {overdue} meses
+                    <span className="flex shrink-0 items-center gap-1.5">
+                      {lateFee > 0 && (
+                        <span className="rounded bg-rose-900 px-1.5 py-0.5 text-xs font-semibold">
+                          Mora: {formatMoney(lateFee, apt.currency)}
+                        </span>
+                      )}
+                      <span className="rounded bg-rose-900 px-1.5 py-0.5 text-xs font-semibold">
+                        {overdue} meses
+                      </span>
                     </span>
                   </li>
                 ))}
@@ -262,10 +264,10 @@ export default async function DashboardPage() {
                     </div>
                   </dl>
                   <Link
-                    href={`/reports/${owner.id}?month=${periodMonth}&year=${periodYear}`}
+                    href={`/owners/${owner.id}`}
                     className="mt-3 inline-block text-sm font-medium text-slate-50 underline"
                   >
-                    Ver reporte mensual →
+                    Ver apartamentos y reportes →
                   </Link>
                 </div>
               );

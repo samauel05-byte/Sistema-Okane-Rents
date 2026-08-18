@@ -44,8 +44,8 @@ export default function PaymentForm({
         <option value="">Selecciona apartamento / inquilino</option>
         {apartments.map((apt) => (
           <option key={apt.id} value={apt.id} disabled={!apt.tenantId}>
-            {apt.ownerName} — {apt.label} ({apt.currency})
-            {apt.tenantName ? ` (${apt.tenantName})` : " (sin inquilino)"}
+            {apt.tenantName ?? "Sin inquilino"} — {apt.label} ({apt.ownerName},{" "}
+            {apt.currency})
           </option>
         ))}
       </select>

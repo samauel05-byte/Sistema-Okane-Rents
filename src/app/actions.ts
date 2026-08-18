@@ -11,6 +11,7 @@ import {
 } from "@/lib/auth";
 import { nextInvoiceNumber } from "@/lib/business";
 import { DEFAULT_CURRENCY, isCurrency, MONTH_NAMES } from "@/lib/format";
+import { CONTRACT_STATUSES, PAYOUT_STATUSES } from "@/lib/reportStatus";
 
 function currency(formData: FormData, key: string) {
   const v = str(formData, key);
@@ -51,6 +52,24 @@ function lateFeePercent(formData: FormData) {
   return Math.min(MAX_LATE_FEE_PERCENT, Math.max(0, n));
 }
 
+const MAX_COMMISSION_PERCENT = 30;
+
+function commissionPercent(formData: FormData) {
+  const n = optionalNum(formData, "managementCommissionPercent");
+  if (n === null) return null;
+  return Math.min(MAX_COMMISSION_PERCENT, Math.max(0, n));
+}
+
+function contractStatus(formData: FormData) {
+  const v = str(formData, "contractStatus");
+  return (CONTRACT_STATUSES as readonly string[]).includes(v) ? v : null;
+}
+
+function optionalDate(formData: FormData, key: string) {
+  const v = str(formData, key);
+  return v ? new Date(v) : null;
+}
+
 /** Creating brand-new owners/apartments is out of the "assigned apartments"
  * model, so it's reserved for roles with unrestricted (global) scope. */
 function requireGlobalScope(user: CurrentUser) {
@@ -67,12 +86,14 @@ export async function createOwner(formData: FormData) {
   requireGlobalScope(user);
 
   const name = str(formData, "name");
-  if (!name) return;
+  const email = str(formData, "email");
+  const phone = str(formData, "phone");
+  if (!name || !email || !phone) return;
   const owner = await prisma.owner.create({
     data: {
       name,
-      email: str(formData, "email") || null,
-      phone: str(formData, "phone") || null,
+      email,
+      phone,
       rnc: str(formData, "rnc") || null,
     },
   });
@@ -109,6 +130,8 @@ export async function createApartment(formData: FormData) {
       currency: currency(formData, "currency"),
       paymentDueDay: paymentDueDay(formData),
       lateFeePercent: lateFeePercent(formData),
+      managementCommissionPercent: commissionPercent(formData),
+      managerName: str(formData, "managerName") || null,
     },
   });
   revalidatePath(`/owners/${ownerId}`);
@@ -139,9 +162,12 @@ export async function updateApartmentTerms(formData: FormData) {
     data: {
       paymentDueDay: paymentDueDay(formData),
       lateFeePercent: lateFeePercent(formData),
+      managementCommissionPercent: commissionPercent(formData),
+      managerName: str(formData, "managerName") || null,
     },
   });
   revalidatePath("/tenants");
+  revalidatePath(`/reports/${apartment.id}`);
   revalidatePath(`/owners/${apartment.ownerId}`);
 }
 
@@ -151,7 +177,9 @@ export async function createTenant(formData: FormData) {
 
   const apartmentId = str(formData, "apartmentId");
   const name = str(formData, "name");
-  if (!apartmentId || !name) return;
+  const email = str(formData, "email");
+  const phone = str(formData, "phone");
+  if (!apartmentId || !name || !email || !phone) return;
   requireApartmentAccess(user, apartmentId);
 
   const apartment = await prisma.apartment.findUnique({ where: { id: apartmentId } });
@@ -167,8 +195,8 @@ export async function createTenant(formData: FormData) {
     data: {
       apartmentId,
       name,
-      email: str(formData, "email") || null,
-      phone: str(formData, "phone") || null,
+      email,
+      phone,
       rnc: str(formData, "rnc") || null,
       moveInDate: new Date(),
     },
@@ -183,7 +211,9 @@ export async function updateTenant(formData: FormData) {
 
   const id = str(formData, "id");
   const name = str(formData, "name");
-  if (!id || !name) return;
+  const email = str(formData, "email");
+  const phone = str(formData, "phone");
+  if (!id || !name || !email || !phone) return;
 
   const tenant = await prisma.tenant.findUnique({
     where: { id },
@@ -196,12 +226,15 @@ export async function updateTenant(formData: FormData) {
     where: { id },
     data: {
       name,
-      email: str(formData, "email") || null,
-      phone: str(formData, "phone") || null,
+      email,
+      phone,
       rnc: str(formData, "rnc") || null,
+      contractEnd: optionalDate(formData, "contractEnd"),
+      contractStatus: contractStatus(formData),
     },
   });
   revalidatePath("/tenants");
+  revalidatePath(`/reports/${tenant.apartmentId}`);
   revalidatePath(`/owners/${tenant.apartment.ownerId}`);
 }
 
@@ -349,12 +382,14 @@ export async function createExpense(formData: FormData) {
       periodMonth,
       periodYear,
       category: str(formData, "category") || null,
+      responsible: str(formData, "responsible") || null,
       incurredOn: str(formData, "incurredOn")
         ? new Date(str(formData, "incurredOn"))
         : new Date(),
     },
   });
   revalidatePath("/expenses");
+  if (apartmentId) revalidatePath(`/reports/${apartmentId}`);
   revalidatePath("/");
 }
 
@@ -481,4 +516,37 @@ export async function deleteInvoice(formData: FormData) {
 
   await prisma.invoice.delete({ where: { id } });
   revalidatePath("/invoices");
+}
+
+export async function updateReportStatus(formData: FormData) {
+  const user = await requireUser();
+  requirePermission(user, "manageApartments");
+
+  const apartmentId = str(formData, "apartmentId");
+  const periodMonth = num(formData, "periodMonth");
+  const periodYear = num(formData, "periodYear");
+  if (!apartmentId || !periodMonth || !periodYear) return;
+  requireApartmentAccess(user, apartmentId);
+
+  const payoutStatusInput = str(formData, "payoutStatus");
+  const payoutStatus = (PAYOUT_STATUSES as readonly string[]).includes(payoutStatusInput)
+    ? payoutStatusInput
+    : "PENDIENTE";
+
+  const data = {
+    payoutStatus,
+    paidOn: optionalDate(formData, "paidOn"),
+    paymentMethod: str(formData, "paymentMethod") || null,
+    destinationAccount: str(formData, "destinationAccount") || null,
+    notes: str(formData, "notes") || null,
+  };
+
+  await prisma.reportStatus.upsert({
+    where: {
+      apartmentId_periodMonth_periodYear: { apartmentId, periodMonth, periodYear },
+    },
+    create: { apartmentId, periodMonth, periodYear, ...data },
+    update: data,
+  });
+  revalidatePath(`/reports/${apartmentId}`);
 }

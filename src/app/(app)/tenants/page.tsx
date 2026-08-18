@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/format";
 import { monthsOverdue } from "@/lib/rent";
+import { CONTRACT_STATUSES } from "@/lib/reportStatus";
 import {
   createTenant,
   updateTenant,
@@ -8,6 +9,11 @@ import {
   updateApartmentTerms,
 } from "@/app/actions";
 import { requireUser, accessibleApartmentIds } from "@/lib/auth";
+
+function toDateInputValue(date: Date | null) {
+  if (!date) return "";
+  return date.toISOString().slice(0, 10);
+}
 
 export default async function TenantsPage() {
   const user = await requireUser();
@@ -71,13 +77,15 @@ export default async function TenantsPage() {
             />
             <input
               name="phone"
-              placeholder="Teléfono (opcional)"
+              placeholder="Teléfono"
+              required
               className="rounded-md border border-slate-700 px-3 py-2 text-sm"
             />
             <input
               name="email"
               type="email"
-              placeholder="Correo (opcional)"
+              placeholder="Correo"
+              required
               className="rounded-md border border-slate-700 px-3 py-2 text-sm"
             />
             <input
@@ -169,12 +177,14 @@ export default async function TenantsPage() {
                                   name="phone"
                                   defaultValue={current.phone ?? ""}
                                   placeholder="Teléfono"
+                                  required
                                   className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
                                 />
                                 <input
                                   name="email"
                                   defaultValue={current.email ?? ""}
                                   placeholder="Correo"
+                                  required
                                   className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
                                 />
                                 <input
@@ -183,6 +193,27 @@ export default async function TenantsPage() {
                                   placeholder="RNC/Cédula"
                                   className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
                                 />
+                                <label className="text-xs text-slate-400">
+                                  Fin de contrato
+                                  <input
+                                    name="contractEnd"
+                                    type="date"
+                                    defaultValue={toDateInputValue(current.contractEnd)}
+                                    className="mt-1 w-full rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                                  />
+                                </label>
+                                <select
+                                  name="contractStatus"
+                                  defaultValue={current.contractStatus ?? ""}
+                                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                                >
+                                  <option value="">Estatus del contrato</option>
+                                  {CONTRACT_STATUSES.map((s) => (
+                                    <option key={s} value={s}>
+                                      {s}
+                                    </option>
+                                  ))}
+                                </select>
                                 <button
                                   type="submit"
                                   className="rounded-md bg-[#D2491C] px-2 py-1.5 text-xs font-medium text-white hover:bg-[#b83d17]"
@@ -195,7 +226,7 @@ export default async function TenantsPage() {
                           {canManage && (
                             <details>
                               <summary className="cursor-pointer font-medium text-slate-300">
-                                Día de pago / mora
+                                Día de pago / mora / comisión
                               </summary>
                               <form
                                 action={updateApartmentTerms}
@@ -219,6 +250,22 @@ export default async function TenantsPage() {
                                   max="10"
                                   defaultValue={apt.lateFeePercent ?? ""}
                                   placeholder="Mora % (máx. 10)"
+                                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                                />
+                                <input
+                                  name="managementCommissionPercent"
+                                  type="number"
+                                  step="0.1"
+                                  min="0"
+                                  max="30"
+                                  defaultValue={apt.managementCommissionPercent ?? ""}
+                                  placeholder="Comisión % (máx. 30)"
+                                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                                />
+                                <input
+                                  name="managerName"
+                                  defaultValue={apt.managerName ?? ""}
+                                  placeholder="Encargado/a"
                                   className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
                                 />
                                 <button

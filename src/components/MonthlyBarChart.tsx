@@ -1,9 +1,9 @@
 // Validated (dark surface #1a1a19): blue vs orange clears CVD + contrast
 // checks as a 2-series categorical pair — see the dataviz skill's palette.
 const COLOR_COLLECTED = "#3987e5";
-const COLOR_EXPENSES = "#d95926";
+const COLOR_PENDING = "#d95926";
 
-type MonthDatum = { label: string; collected: number; expenses: number };
+type MonthDatum = { label: string; collected: number; pending: number };
 
 export default function MonthlyBarChart({ data }: { data: MonthDatum[] }) {
   const width = 640;
@@ -16,7 +16,7 @@ export default function MonthlyBarChart({ data }: { data: MonthDatum[] }) {
   const chartHeight = height - paddingTop - paddingBottom;
   const baseY = paddingTop + chartHeight;
 
-  const max = Math.max(1, ...data.flatMap((d) => [d.collected, d.expenses]));
+  const max = Math.max(1, ...data.flatMap((d) => [d.collected, d.pending]));
   const groupWidth = chartWidth / Math.max(1, data.length);
   const barWidth = Math.min(28, (groupWidth - 16) / 2);
   const barGap = 3;
@@ -30,7 +30,7 @@ export default function MonthlyBarChart({ data }: { data: MonthDatum[] }) {
           viewBox={`0 0 ${width} ${height}`}
           className="w-full min-w-[480px]"
           role="img"
-          aria-label="Cobros y eventualidades por mes, en pesos dominicanos"
+          aria-label="Cobrado y pendiente por cobrar por mes, en pesos dominicanos"
         >
           {[0, 0.25, 0.5, 0.75, 1].map((t) => (
             <line
@@ -55,7 +55,7 @@ export default function MonthlyBarChart({ data }: { data: MonthDatum[] }) {
           {data.map((d, i) => {
             const centerX = paddingLeft + i * groupWidth + groupWidth / 2;
             const collectedH = barHeight(d.collected);
-            const expensesH = barHeight(d.expenses);
+            const pendingH = barHeight(d.pending);
             return (
               <g key={`${d.label}-${i}`}>
                 <rect
@@ -72,14 +72,14 @@ export default function MonthlyBarChart({ data }: { data: MonthDatum[] }) {
                 </rect>
                 <rect
                   x={centerX + barGap / 2}
-                  y={baseY - expensesH}
+                  y={baseY - pendingH}
                   width={barWidth}
-                  height={Math.max(expensesH, 1)}
+                  height={Math.max(pendingH, 1)}
                   rx={2}
-                  fill={COLOR_EXPENSES}
+                  fill={COLOR_PENDING}
                 >
                   <title>
-                    {d.label} — Eventualidades: {d.expenses.toLocaleString("es-DO")}
+                    {d.label} — Pendiente por cobrar: {d.pending.toLocaleString("es-DO")}
                   </title>
                 </rect>
                 <text
@@ -107,9 +107,9 @@ export default function MonthlyBarChart({ data }: { data: MonthDatum[] }) {
         <span className="flex items-center gap-1.5">
           <span
             className="h-2.5 w-2.5 rounded-sm"
-            style={{ background: COLOR_EXPENSES }}
+            style={{ background: COLOR_PENDING }}
           />
-          Eventualidades
+          Pendiente por cobrar
         </span>
       </div>
     </div>

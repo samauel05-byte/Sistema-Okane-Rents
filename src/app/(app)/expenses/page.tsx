@@ -109,6 +109,11 @@ export default async function ExpensesPage() {
               placeholder="Categoría (opcional, ej. plomería)"
               className="rounded-md border border-slate-700 px-3 py-2 text-sm"
             />
+            <input
+              name="responsible"
+              placeholder="Responsable (opcional, ej. plomero contratado)"
+              className="rounded-md border border-slate-700 px-3 py-2 text-sm"
+            />
 
             <select
               name="periodMonth"
@@ -159,6 +164,7 @@ export default async function ExpensesPage() {
                   <th className="p-3">Propietario</th>
                   <th className="p-3">Apartamento</th>
                   <th className="p-3">Descripción</th>
+                  <th className="p-3">Responsable</th>
                   <th className="p-3">Periodo</th>
                   <th className="p-3 text-right">Monto</th>
                   <th className="p-3" />
@@ -171,6 +177,7 @@ export default async function ExpensesPage() {
                     <td className="p-3">{e.owner.name}</td>
                     <td className="p-3">{e.apartment?.label ?? "General"}</td>
                     <td className="p-3">{e.description}</td>
+                    <td className="p-3">{e.responsible ?? "—"}</td>
                     <td className="p-3">{monthLabel(e.periodMonth, e.periodYear)}</td>
                     <td className="p-3 text-right font-medium text-rose-400">
                       {formatMoney(e.amount, e.currency)}
