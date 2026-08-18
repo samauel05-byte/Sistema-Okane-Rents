@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatDate, formatMoney, monthLabel } from "@/lib/format";
 import { deletePayment } from "@/app/actions";
@@ -79,17 +80,27 @@ export default async function PaymentsPage() {
                       {formatMoney(p.amount, p.currency)}
                     </td>
                     <td className="p-3 text-right">
-                      {user.role.managePayments && (
-                        <form action={deletePayment}>
-                          <input type="hidden" name="id" value={p.id} />
-                          <button
-                            type="submit"
-                            className="text-xs text-rose-500 hover:underline"
+                      <div className="flex justify-end gap-3">
+                        {p.invoiceId && (
+                          <Link
+                            href={`/invoices/${p.invoiceId}`}
+                            className="text-xs font-medium text-slate-600 hover:underline"
                           >
-                            Eliminar
-                          </button>
-                        </form>
-                      )}
+                            Ver recibo
+                          </Link>
+                        )}
+                        {user.role.managePayments && (
+                          <form action={deletePayment}>
+                            <input type="hidden" name="id" value={p.id} />
+                            <button
+                              type="submit"
+                              className="text-xs text-rose-500 hover:underline"
+                            >
+                              Eliminar
+                            </button>
+                          </form>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

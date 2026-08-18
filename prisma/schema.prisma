@@ -74,6 +74,9 @@ model Payment {
   apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
   apartmentId String
   createdAt   DateTime  @default(now())
+  // Receipt auto-generated for this payment, if any.
+  invoice     Invoice?  @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  invoiceId   String?   @unique
 }
 
 // A cost paid on behalf of the owner (repairs, maintenance, etc.) that
@@ -176,6 +179,8 @@ model Invoice {
   concept     String
   amount      Float
   currency    String     @default("DOP")
+  // Whether ITBIS (18%, RD VAT) is added on top of "amount" when displayed.
+  applyItbis  Boolean    @default(false)
   clientName  String
   clientRnc   String?
   notes       String?
@@ -188,4 +193,5 @@ model Invoice {
   tenant      Tenant?    @relation(fields: [tenantId], references: [id], onDelete: SetNull)
   tenantId    String?
   createdAt   DateTime   @default(now())
+  payment     Payment?
 }
