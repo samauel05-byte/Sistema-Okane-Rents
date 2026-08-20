@@ -7,6 +7,8 @@ import {
   createTenant,
   deleteApartment,
   deleteOwner,
+  updateApartment,
+  updateOwner,
 } from "@/app/actions";
 import { requireUser, accessibleApartmentIds } from "@/lib/auth";
 
@@ -34,6 +36,7 @@ export default async function OwnerDetailPage({
   if (!owner) notFound();
   if (ids && owner.apartments.length === 0) notFound();
 
+  const canEditOwner = user.role.manageOwners;
   const canDeleteOwner = user.role.manageOwners && user.role.scopeAllApartments;
   const canCreateApartment =
     user.role.manageApartments && user.role.scopeAllApartments;
@@ -50,6 +53,49 @@ export default async function OwnerDetailPage({
           <p className="text-sm text-slate-400">
             {[owner.email, owner.phone].filter(Boolean).join(" · ") || "Sin datos de contacto"}
           </p>
+          {canEditOwner && (
+            <details className="mt-2">
+              <summary className="cursor-pointer text-xs font-medium text-slate-300">
+                Editar datos del propietario
+              </summary>
+              <form action={updateOwner} className="mt-2 grid max-w-sm gap-2">
+                <input type="hidden" name="id" value={owner.id} />
+                <input
+                  name="name"
+                  defaultValue={owner.name}
+                  required
+                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                />
+                <input
+                  name="email"
+                  type="email"
+                  defaultValue={owner.email ?? ""}
+                  placeholder="Correo"
+                  required
+                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                />
+                <input
+                  name="phone"
+                  defaultValue={owner.phone ?? ""}
+                  placeholder="Teléfono"
+                  required
+                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                />
+                <input
+                  name="rnc"
+                  defaultValue={owner.rnc ?? ""}
+                  placeholder="RNC/Cédula (opcional)"
+                  className="rounded-md border border-slate-700 px-2 py-1.5 text-sm"
+                />
+                <button
+                  type="submit"
+                  className="rounded-md bg-[#D2491C] px-2 py-1.5 text-xs font-medium text-white hover:bg-[#b83d17]"
+                >
+                  Guardar
+                </button>
+              </form>
+            </details>
+          )}
         </div>
         <div className="flex flex-wrap gap-2">
           {canDeleteOwner && (
@@ -119,12 +165,60 @@ export default async function OwnerDetailPage({
                   </Link>
 
                   {canManageApartments && (
-                    <details className="mt-3">
-                      <summary className="cursor-pointer text-xs font-medium text-slate-300">
-                        {tenant ? "Cambiar inquilino" : "Asignar inquilino"}
-                      </summary>
-                      <form action={createTenant} className="mt-2 grid gap-2">
-                        <input type="hidden" name="apartmentId" value={apt.id} />
+                    <div className="mt-3 flex flex-wrap gap-3">
+                      <details>
+                        <summary className="cursor-pointer text-xs font-medium text-slate-300">
+                          Editar apartamento
+                        </summary>
+                        <form action={updateApartment} className="mt-2 grid w-48 gap-2">
+                          <input type="hidden" name="id" value={apt.id} />
+                          <input
+                            name="label"
+                            defaultValue={apt.label}
+                            required
+                            className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-50"
+                          />
+                          <input
+                            name="address"
+                            defaultValue={apt.address ?? ""}
+                            placeholder="Dirección (opcional)"
+                            className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-50"
+                          />
+                          <input
+                            name="rentAmount"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            defaultValue={apt.rentAmount}
+                            required
+                            className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-50"
+                          />
+                          <select
+                            name="currency"
+                            defaultValue={apt.currency}
+                            className="w-full min-w-0 rounded-md border border-slate-700 bg-slate-900 px-2 py-1.5 text-sm text-slate-50"
+                          >
+                            {CURRENCIES.map((c) => (
+                              <option key={c} value={c}>
+                                {CURRENCY_LABELS[c]}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            type="submit"
+                            className="rounded-md bg-[#D2491C] px-2 py-1.5 text-xs font-medium text-white hover:bg-[#b83d17]"
+                          >
+                            Guardar
+                          </button>
+                        </form>
+                      </details>
+
+                      <details>
+                        <summary className="cursor-pointer text-xs font-medium text-slate-300">
+                          {tenant ? "Cambiar inquilino" : "Asignar inquilino"}
+                        </summary>
+                        <form action={createTenant} className="mt-2 grid gap-2">
+                          <input type="hidden" name="apartmentId" value={apt.id} />
                         <input
                           name="name"
                           placeholder="Nombre del inquilino"
@@ -191,7 +285,8 @@ export default async function OwnerDetailPage({
                           Guardar
                         </button>
                       </form>
-                    </details>
+                      </details>
+                    </div>
                   )}
                 </div>
               );

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import {
   MONTH_NAMES,
@@ -184,15 +185,23 @@ export default async function ExpensesPage() {
                     </td>
                     <td className="p-3 text-right">
                       {user.role.manageExpenses && (
-                        <form action={deleteExpense}>
-                          <input type="hidden" name="id" value={e.id} />
-                          <button
-                            type="submit"
-                            className="text-xs text-rose-400 hover:underline"
+                        <div className="flex justify-end gap-3">
+                          <Link
+                            href={`/expenses/${e.id}/edit`}
+                            className="text-xs font-medium text-slate-300 hover:underline"
                           >
-                            Eliminar
-                          </button>
-                        </form>
+                            Editar
+                          </Link>
+                          <form action={deleteExpense}>
+                            <input type="hidden" name="id" value={e.id} />
+                            <button
+                              type="submit"
+                              className="text-xs text-rose-400 hover:underline"
+                            >
+                              Eliminar
+                            </button>
+                          </form>
+                        </div>
                       )}
                     </td>
                   </tr>

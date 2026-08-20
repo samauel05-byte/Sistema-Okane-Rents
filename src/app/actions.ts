@@ -101,6 +101,24 @@ export async function createOwner(formData: FormData) {
   redirect(`/owners/${owner.id}`);
 }
 
+export async function updateOwner(formData: FormData) {
+  const user = await requireUser();
+  requirePermission(user, "manageOwners");
+
+  const id = str(formData, "id");
+  const name = str(formData, "name");
+  const email = str(formData, "email");
+  const phone = str(formData, "phone");
+  if (!id || !name || !email || !phone) return;
+
+  await prisma.owner.update({
+    where: { id },
+    data: { name, email, phone, rnc: str(formData, "rnc") || null },
+  });
+  revalidatePath(`/owners/${id}`);
+  revalidatePath("/owners");
+}
+
 export async function deleteOwner(formData: FormData) {
   const user = await requireUser();
   requirePermission(user, "manageOwners");
@@ -147,6 +165,30 @@ export async function deleteApartment(formData: FormData) {
 
   await prisma.apartment.delete({ where: { id } });
   revalidatePath(`/owners/${ownerId}`);
+}
+
+export async function updateApartment(formData: FormData) {
+  const user = await requireUser();
+  requirePermission(user, "manageApartments");
+
+  const id = str(formData, "id");
+  const label = str(formData, "label");
+  const rentAmount = num(formData, "rentAmount");
+  if (!id || !label || !rentAmount) return;
+  requireApartmentAccess(user, id);
+
+  const apartment = await prisma.apartment.update({
+    where: { id },
+    data: {
+      label,
+      address: str(formData, "address") || null,
+      rentAmount,
+      currency: currency(formData, "currency"),
+    },
+  });
+  revalidatePath("/tenants");
+  revalidatePath(`/reports/${apartment.id}`);
+  revalidatePath(`/owners/${apartment.ownerId}`);
 }
 
 export async function updateApartmentTerms(formData: FormData) {
@@ -337,6 +379,57 @@ export async function createPayment(formData: FormData) {
   revalidatePath("/");
 }
 
+export async function updatePayment(formData: FormData) {
+  const user = await requireUser();
+  requirePermission(user, "managePayments");
+
+  const id = str(formData, "id");
+  const amount = num(formData, "amount");
+  const periodMonth = num(formData, "periodMonth");
+  const periodYear = num(formData, "periodYear");
+  if (!id || !amount || !periodMonth || !periodYear) return;
+
+  const payment = await prisma.payment.findUnique({ where: { id } });
+  if (!payment) return;
+  requireApartmentAccess(user, payment.apartmentId);
+
+  const paidOn = str(formData, "paidOn") ? new Date(str(formData, "paidOn")) : payment.paidOn;
+
+  await prisma.payment.update({
+    where: { id },
+    data: {
+      amount,
+      periodMonth,
+      periodYear,
+      method: str(formData, "method") || null,
+      notes: str(formData, "notes") || null,
+      paidOn,
+    },
+  });
+
+  // Keep the auto-generated receipt in sync with the corrected amount/period.
+  if (payment.invoiceId) {
+    const apartment = await prisma.apartment.findUnique({ where: { id: payment.apartmentId } });
+    await prisma.invoice.update({
+      where: { id: payment.invoiceId },
+      data: {
+        amount,
+        issuedOn: paidOn,
+        periodMonth,
+        periodYear,
+        concept: apartment
+          ? `Pago de renta correspondiente a ${MONTH_NAMES[periodMonth - 1]} ${periodYear} — ${apartment.label}`
+          : undefined,
+      },
+    });
+  }
+
+  revalidatePath("/payments");
+  revalidatePath("/invoices");
+  revalidatePath("/");
+  redirect("/payments");
+}
+
 export async function deletePayment(formData: FormData) {
   const user = await requireUser();
   requirePermission(user, "managePayments");
@@ -414,6 +507,46 @@ export async function createExpense(formData: FormData) {
   revalidatePath("/expenses");
   if (apartmentId) revalidatePath(`/reports/${apartmentId}`);
   revalidatePath("/");
+}
+
+export async function updateExpense(formData: FormData) {
+  const user = await requireUser();
+  requirePermission(user, "manageExpenses");
+
+  const id = str(formData, "id");
+  const description = str(formData, "description");
+  const amount = num(formData, "amount");
+  const periodMonth = num(formData, "periodMonth");
+  const periodYear = num(formData, "periodYear");
+  if (!id || !description || !amount || !periodMonth || !periodYear) return;
+
+  const expense = await prisma.expense.findUnique({ where: { id } });
+  if (!expense) return;
+  if (expense.apartmentId) {
+    requireApartmentAccess(user, expense.apartmentId);
+  } else {
+    await requireOwnerAccess(user, expense.ownerId);
+  }
+
+  await prisma.expense.update({
+    where: { id },
+    data: {
+      description,
+      amount,
+      currency: currency(formData, "currency"),
+      periodMonth,
+      periodYear,
+      category: str(formData, "category") || null,
+      responsible: str(formData, "responsible") || null,
+      incurredOn: str(formData, "incurredOn")
+        ? new Date(str(formData, "incurredOn"))
+        : expense.incurredOn,
+    },
+  });
+  revalidatePath("/expenses");
+  if (expense.apartmentId) revalidatePath(`/reports/${expense.apartmentId}`);
+  revalidatePath("/");
+  redirect("/expenses");
 }
 
 export async function deleteExpense(formData: FormData) {

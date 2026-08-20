@@ -90,15 +90,23 @@ export default async function PaymentsPage() {
                           </Link>
                         )}
                         {user.role.managePayments && (
-                          <form action={deletePayment}>
-                            <input type="hidden" name="id" value={p.id} />
-                            <button
-                              type="submit"
-                              className="text-xs text-rose-400 hover:underline"
+                          <>
+                            <Link
+                              href={`/payments/${p.id}/edit`}
+                              className="text-xs font-medium text-slate-300 hover:underline"
                             >
-                              Eliminar
-                            </button>
-                          </form>
+                              Editar
+                            </Link>
+                            <form action={deletePayment}>
+                              <input type="hidden" name="id" value={p.id} />
+                              <button
+                                type="submit"
+                                className="text-xs text-rose-400 hover:underline"
+                              >
+                                Eliminar
+                              </button>
+                            </form>
+                          </>
                         )}
                       </div>
                     </td>
