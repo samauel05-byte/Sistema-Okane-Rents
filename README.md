@@ -35,6 +35,20 @@ propietario (pendiente/remitido, con método y cuenta destino), mantenimiento
 e incidencias, y observaciones. Queda en tema claro para que se vea bien al
 imprimir o guardar como PDF.
 
+En cuanto se marca el pago como **remitido**, las cifras del resumen
+financiero quedan congeladas (🔒) — así, si más adelante cambias el % de
+comisión del apartamento o agregas una eventualidad nueva, los reportes ya
+pagados no se recalculan con datos distintos a los que se usaron realmente.
+Para "descongelar" un período (por ejemplo, si hubo un error), basta con
+volver a marcarlo como pendiente.
+
+Desde el reporte también se puede **enviar por correo** al propietario (ver
+"Envío de correo" más abajo).
+
+El dashboard avisa cuando un apartamento ocupado no tiene comisión de
+gestión configurada, para que no se te quede ningún reporte calculando la
+comisión como 0%.
+
 ### Facturas y recibos
 
 Desde **Facturas** se puede generar un **recibo de pago** para un inquilino
@@ -43,6 +57,35 @@ Desde **Facturas** se puede generar un **recibo de pago** para un inquilino
 NCF/RNC opcionales y listos para imprimir/guardar como PDF. Los datos del
 negocio que aparecen como emisor, así como el logo y el favicon, se
 configuran en `/admin/business`.
+
+## Envío de correo
+
+El botón "Enviar por correo" del reporte usa la API de [Resend](https://resend.com)
+para mandarle al propietario un resumen del reporte por email. Para que
+funcione hace falta configurar en las variables de entorno (locales o en
+Vercel):
+
+- `RESEND_API_KEY` — API key de tu cuenta de Resend (obligatoria).
+- `RESEND_FROM_EMAIL` — remitente, ej. `Okane Rents <reportes@tudominio.com>`.
+  Requiere verificar el dominio en Resend; si no se configura, se usa el
+  remitente de pruebas de Resend, que solo entrega al correo del dueño de
+  la cuenta.
+- `NEXT_PUBLIC_APP_URL` — URL pública del sistema (ej.
+  `https://okane-rents.vercel.app`), para incluir un enlace al reporte
+  completo dentro del correo.
+
+Si `RESEND_API_KEY` no está configurada, el botón muestra un mensaje claro en
+vez de fallar en silencio.
+
+## Pruebas
+
+```bash
+npm run test
+```
+
+Corre las pruebas unitarias (Vitest) de la lógica de negocio pura: mora
+(`monthsOverdue`), formato de moneda multi-divisa, y el cálculo del resumen
+financiero del reporte (`computeReportFinancials`).
 
 ## Sesión
 

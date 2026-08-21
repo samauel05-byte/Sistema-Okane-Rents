@@ -116,6 +116,10 @@ export default async function DashboardPage() {
     .filter((t) => t.lateFee > 0)
     .map((t) => ({ amount: t.lateFee, currency: t.apt.currency }));
 
+  const missingCommission = apartments.filter(
+    (apt) => apt.tenants.length > 0 && apt.managementCommissionPercent == null
+  );
+
   const stats = [
     { label: "Cobrado este mes", value: formatMoneyByCurrency(thisMonthPayments) },
     {
@@ -214,6 +218,27 @@ export default async function DashboardPage() {
                 className="mt-2 inline-block text-sm font-medium text-rose-300 underline"
               >
                 Ver en Inquilinos →
+              </Link>
+            </div>
+          )}
+
+          {missingCommission.length > 0 && (
+            <div className="rounded-lg border border-amber-800 bg-amber-950 p-4">
+              <h2 className="mb-2 font-semibold text-amber-300">
+                Apartamentos sin comisión de gestión configurada
+              </h2>
+              <ul className="space-y-1 text-sm text-amber-300">
+                {missingCommission.map((apt) => (
+                  <li key={apt.id}>
+                    {apt.ownerName} · {apt.label}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/tenants"
+                className="mt-2 inline-block text-sm font-medium text-amber-300 underline"
+              >
+                Configurar comisión →
               </Link>
             </div>
           )}

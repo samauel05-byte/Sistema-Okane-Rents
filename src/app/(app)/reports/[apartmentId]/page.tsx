@@ -3,9 +3,11 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatDate, formatMoney, monthLabel } from "@/lib/format";
 import { PAYOUT_STATUSES, PAYOUT_STATUS_LABELS } from "@/lib/reportStatus";
+import { computeReportFinancials } from "@/lib/report";
 import { requireUser, canAccessApartment } from "@/lib/auth";
 import { updateReportStatus } from "@/app/actions";
 import PrintButton from "@/components/PrintButton";
+import SendReportEmailForm from "./SendReportEmailForm";
 
 function shiftMonth(month: number, year: number, delta: number) {
   const d = new Date(year, month - 1 + delta, 1);
@@ -51,16 +53,25 @@ export default async function ApartmentReportPage({
     },
   });
 
-  const rentCollected = apartment.payments.reduce((s, p) => s + p.amount, 0);
-  const lateFee =
-    rentCollected === 0 && apartment.lateFeePercent
-      ? (apartment.rentAmount * apartment.lateFeePercent) / 100
-      : 0;
-  const totalIncome = rentCollected + lateFee;
-  const commissionPercent = apartment.managementCommissionPercent ?? 0;
-  const commissionAmount = (totalIncome * commissionPercent) / 100;
-  const maintenanceCost = apartment.expenses.reduce((s, e) => s + e.amount, 0);
-  const netAmount = totalIncome - commissionAmount - maintenanceCost;
+  const isFrozen = reportStatus?.netAmountSnapshot != null;
+  const { rentCollected, lateFee, totalIncome, commissionPercent, commissionAmount, maintenanceCost, netAmount } =
+    isFrozen
+      ? {
+          rentCollected: reportStatus!.rentCollectedSnapshot!,
+          lateFee: reportStatus!.lateFeeSnapshot!,
+          totalIncome: reportStatus!.totalIncomeSnapshot!,
+          commissionPercent: reportStatus!.commissionPercentSnapshot!,
+          commissionAmount: reportStatus!.commissionAmountSnapshot!,
+          maintenanceCost: reportStatus!.maintenanceCostSnapshot!,
+          netAmount: reportStatus!.netAmountSnapshot!,
+        }
+      : computeReportFinancials({
+          rentAmount: apartment.rentAmount,
+          lateFeePercent: apartment.lateFeePercent,
+          managementCommissionPercent: apartment.managementCommissionPercent,
+          rentCollected: apartment.payments.reduce((s, p) => s + p.amount, 0),
+          maintenanceCost: apartment.expenses.reduce((s, e) => s + e.amount, 0),
+        });
 
   const prev = shiftMonth(periodMonth, periodYear, -1);
   const next = shiftMonth(periodMonth, periodYear, 1);
@@ -90,6 +101,15 @@ export default async function ApartmentReportPage({
           <PrintButton />
         </div>
       </div>
+
+      {user.role.manageApartments && (
+        <SendReportEmailForm
+          apartmentId={apartment.id}
+          periodMonth={periodMonth}
+          periodYear={periodYear}
+          ownerEmail={apartment.owner.email}
+        />
+      )}
 
       <div className="rounded-lg border border-slate-200 bg-white p-4 sm:p-6">
         <div className="mb-6 border-b border-slate-100 pb-4">
@@ -144,7 +164,14 @@ export default async function ApartmentReportPage({
         </div>
 
         {/* 3. RESUMEN FINANCIERO */}
-        <h2 className="mb-2 font-bold text-[#C74626]">3. RESUMEN FINANCIERO DEL PERÍODO</h2>
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <h2 className="font-bold text-[#C74626]">3. RESUMEN FINANCIERO DEL PERÍODO</h2>
+          {isFrozen && (
+            <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+              🔒 Cifras congeladas al remitir el pago
+            </span>
+          )}
+        </div>
         <div className="mb-6 overflow-hidden rounded-md border border-slate-200">
           <table className="w-full text-sm">
             <tbody className="divide-y divide-slate-100">
