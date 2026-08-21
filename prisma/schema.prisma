@@ -219,6 +219,16 @@ model ReportStatus {
   paymentMethod      String?
   destinationAccount String?
   notes              String?
+  // Financial figures frozen the moment payoutStatus first becomes
+  // REMITIDO, so a later change (e.g. commission %) never rewrites what
+  // was actually reported/paid for a closed period. Null while pending.
+  rentCollectedSnapshot   Float?
+  lateFeeSnapshot         Float?
+  totalIncomeSnapshot     Float?
+  commissionPercentSnapshot Float?
+  commissionAmountSnapshot Float?
+  maintenanceCostSnapshot Float?
+  netAmountSnapshot       Float?
   updatedAt          DateTime  @updatedAt
 
   @@unique([apartmentId, periodMonth, periodYear])

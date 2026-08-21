@@ -10,8 +10,10 @@ import {
   type CurrentUser,
 } from "@/lib/auth";
 import { nextInvoiceNumber } from "@/lib/business";
-import { DEFAULT_CURRENCY, isCurrency, MONTH_NAMES } from "@/lib/format";
+import { DEFAULT_CURRENCY, isCurrency, MONTH_NAMES, monthLabel, formatMoney } from "@/lib/format";
 import { CONTRACT_STATUSES, PAYOUT_STATUSES } from "@/lib/reportStatus";
+import { computeReportFinancials } from "@/lib/report";
+import { sendEmail } from "@/lib/email";
 
 function currency(formData: FormData, key: string) {
   const v = str(formData, key);
@@ -689,12 +691,62 @@ export async function updateReportStatus(formData: FormData) {
     ? payoutStatusInput
     : "PENDIENTE";
 
+  const existing = await prisma.reportStatus.findUnique({
+    where: {
+      apartmentId_periodMonth_periodYear: { apartmentId, periodMonth, periodYear },
+    },
+  });
+
+  let snapshot: Record<string, number | null> = {};
+  if (payoutStatus === "REMITIDO" && existing?.netAmountSnapshot == null) {
+    // Freeze the numbers exactly as they are the moment the payout is
+    // marked remitted, so later edits (commission %, new expenses, etc.)
+    // never rewrite what was actually reported/paid for this period.
+    const apartment = await prisma.apartment.findUnique({
+      where: { id: apartmentId },
+      include: {
+        payments: { where: { periodMonth, periodYear } },
+        expenses: { where: { periodMonth, periodYear } },
+      },
+    });
+    if (apartment) {
+      const financials = computeReportFinancials({
+        rentAmount: apartment.rentAmount,
+        lateFeePercent: apartment.lateFeePercent,
+        managementCommissionPercent: apartment.managementCommissionPercent,
+        rentCollected: apartment.payments.reduce((s, p) => s + p.amount, 0),
+        maintenanceCost: apartment.expenses.reduce((s, e) => s + e.amount, 0),
+      });
+      snapshot = {
+        rentCollectedSnapshot: financials.rentCollected,
+        lateFeeSnapshot: financials.lateFee,
+        totalIncomeSnapshot: financials.totalIncome,
+        commissionPercentSnapshot: financials.commissionPercent,
+        commissionAmountSnapshot: financials.commissionAmount,
+        maintenanceCostSnapshot: financials.maintenanceCost,
+        netAmountSnapshot: financials.netAmount,
+      };
+    }
+  } else if (payoutStatus === "PENDIENTE") {
+    // Unlock: clear any previous snapshot so it can be re-frozen later.
+    snapshot = {
+      rentCollectedSnapshot: null,
+      lateFeeSnapshot: null,
+      totalIncomeSnapshot: null,
+      commissionPercentSnapshot: null,
+      commissionAmountSnapshot: null,
+      maintenanceCostSnapshot: null,
+      netAmountSnapshot: null,
+    };
+  }
+
   const data = {
     payoutStatus,
     paidOn: optionalDate(formData, "paidOn"),
     paymentMethod: str(formData, "paymentMethod") || null,
     destinationAccount: str(formData, "destinationAccount") || null,
     notes: str(formData, "notes") || null,
+    ...snapshot,
   };
 
   await prisma.reportStatus.upsert({
@@ -705,4 +757,91 @@ export async function updateReportStatus(formData: FormData) {
     update: data,
   });
   revalidatePath(`/reports/${apartmentId}`);
+}
+
+export type SendReportEmailState = { error?: string; success?: string };
+
+export async function sendReportEmail(
+  _prevState: SendReportEmailState,
+  formData: FormData
+): Promise<SendReportEmailState> {
+  const user = await requireUser();
+  requirePermission(user, "manageApartments");
+
+  const apartmentId = str(formData, "apartmentId");
+  const periodMonth = num(formData, "periodMonth");
+  const periodYear = num(formData, "periodYear");
+  if (!apartmentId || !periodMonth || !periodYear) {
+    return { error: "Faltan datos del período." };
+  }
+  requireApartmentAccess(user, apartmentId);
+
+  const apartment = await prisma.apartment.findUnique({
+    where: { id: apartmentId },
+    include: {
+      owner: true,
+      payments: { where: { periodMonth, periodYear } },
+      expenses: { where: { periodMonth, periodYear } },
+    },
+  });
+  if (!apartment) return { error: "Apartamento no encontrado." };
+  if (!apartment.owner.email) {
+    return { error: "El propietario no tiene un correo configurado." };
+  }
+
+  const reportStatus = await prisma.reportStatus.findUnique({
+    where: {
+      apartmentId_periodMonth_periodYear: { apartmentId, periodMonth, periodYear },
+    },
+  });
+
+  const financials =
+    reportStatus?.netAmountSnapshot != null
+      ? {
+          rentCollected: reportStatus.rentCollectedSnapshot!,
+          lateFee: reportStatus.lateFeeSnapshot!,
+          totalIncome: reportStatus.totalIncomeSnapshot!,
+          commissionPercent: reportStatus.commissionPercentSnapshot!,
+          commissionAmount: reportStatus.commissionAmountSnapshot!,
+          maintenanceCost: reportStatus.maintenanceCostSnapshot!,
+          netAmount: reportStatus.netAmountSnapshot!,
+        }
+      : computeReportFinancials({
+          rentAmount: apartment.rentAmount,
+          lateFeePercent: apartment.lateFeePercent,
+          managementCommissionPercent: apartment.managementCommissionPercent,
+          rentCollected: apartment.payments.reduce((s, p) => s + p.amount, 0),
+          maintenanceCost: apartment.expenses.reduce((s, e) => s + e.amount, 0),
+        });
+
+  const currency = apartment.currency;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+  const reportLink = appUrl
+    ? `${appUrl}/reports/${apartmentId}?month=${periodMonth}&year=${periodYear}`
+    : null;
+
+  const html = `
+    <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+      <h1 style="color:#C74626; font-size: 18px;">Reporte de Propietario — ${apartment.label}</h1>
+      <p style="color:#6B6B6B; font-size: 13px;">${monthLabel(periodMonth, periodYear)}</p>
+      <table style="width:100%; font-size: 14px; border-collapse: collapse; margin-top: 12px;">
+        <tr><td>Renta cobrada</td><td style="text-align:right;">${formatMoney(financials.rentCollected, currency)}</td></tr>
+        <tr><td>Mora</td><td style="text-align:right;">${formatMoney(financials.lateFee, currency)}</td></tr>
+        <tr><td>Comisión Okane Rents (${financials.commissionPercent}%)</td><td style="text-align:right;">- ${formatMoney(financials.commissionAmount, currency)}</td></tr>
+        <tr><td>Gastos de mantenimiento</td><td style="text-align:right;">- ${formatMoney(financials.maintenanceCost, currency)}</td></tr>
+        <tr style="font-weight:bold; background:#F5F1EE;"><td>Monto neto a remitir</td><td style="text-align:right;">${formatMoney(financials.netAmount, currency)}</td></tr>
+      </table>
+      ${reportLink ? `<p style="margin-top:16px;"><a href="${reportLink}" style="color:#D2491C;">Ver el reporte completo →</a></p>` : ""}
+      <p style="color:#C74626; font-size: 12px; margin-top: 24px;">Okane Rents — Respuesta y presencia local en Punta Cana</p>
+    </div>
+  `;
+
+  const result = await sendEmail({
+    to: apartment.owner.email,
+    subject: `Reporte mensual — ${apartment.label} — ${monthLabel(periodMonth, periodYear)}`,
+    html,
+  });
+
+  if (!result.ok) return { error: result.error };
+  return { success: `Reporte enviado a ${apartment.owner.email}.` };
 }
